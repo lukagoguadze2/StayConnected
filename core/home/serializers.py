@@ -8,13 +8,31 @@ class CreatePostSerializer(serializers.ModelSerializer):
         fields = ['title', 'description', 'tags']
     
     def create(self, validated_data):
-        title = validated_data.get('title')
-        description = validated_data.get('description')
-        tags = validated_data.get('tags')
-        post = Post.objects.create(title=title, description=description)
-        
-        tags = Tag.objects.filter(id__in=tags)
-        post.tags.set(tags)
-            
-        post.save()
+        print(validated_data)
+        tags = validated_data.pop('tags')
+        post = super().create(validated_data)
+        for tag in tags:
+            post.tags.add(tag)
         return post
+    
+
+class CreateTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['title']
+    
+    def create(self, validated_data):
+        title = validated_data.get('title')
+        
+        if Tag.objects.filter(title=title).exists():
+            raise serializers.ValidationError('Tag already exists')
+        
+        for char in title:
+            if not char.isalpha():
+                raise serializers.ValidationError(
+                    'Title must contain only alphabets'
+                )
+            
+        return super().create(validated_data)
+    
+
