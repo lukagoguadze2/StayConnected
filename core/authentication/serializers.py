@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from authentication.models import User
-
+from django.db.models import Count
 
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
@@ -54,8 +54,11 @@ class SignupSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    answered_questions = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = (
-            'username', 'email', 'is_active', 'is_staff'
-        )
+        fields = ('username', 'email', 'rating', 'answered_questions',)
+        
+    def get_answered_questions(self, obj):
+        return self.context.get('answered_questions', 0)
+    

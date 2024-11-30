@@ -20,3 +20,9 @@ class CreateTagSerializer(serializers.ModelSerializer):
                 )
             
         return super().create(validated_data)
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['title']
