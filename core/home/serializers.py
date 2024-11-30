@@ -8,7 +8,6 @@ class CreatePostSerializer(serializers.ModelSerializer):
         fields = ['title', 'description', 'tags']
     
     def create(self, validated_data):
-        print(validated_data)
         tags = validated_data.pop('tags')
         post = super().create(validated_data)
         for tag in tags:
@@ -36,3 +35,7 @@ class CreateTagSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
 
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['title']
