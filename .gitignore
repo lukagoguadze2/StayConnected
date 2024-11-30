@@ -54,3 +54,8 @@ pytestdebug.log
 build/
 *.rst
 *.log
+.env
+venv/
+*.pyc
+__pycache__/
+db.sqlite3
