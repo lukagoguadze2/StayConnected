@@ -1,5 +1,6 @@
 from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
 
 from .serializers import (
     CreateTagSerializer,
@@ -7,9 +8,13 @@ from .serializers import (
 )
 
 from authentication.serializers import UserProfileSerializer
+from post.serializers import PostSerializer
+
+from .filters import PostFilter
 
 from .models import Tag
 from authentication.models import User
+from post.models import Post
 from rest_framework.response import Response
 
 
@@ -45,8 +50,20 @@ class LeaderboardView(ListAPIView):
                 previous_rating = user.rating
 
             serialized_user = UserProfileSerializer(user).data
-            serialized_user['rank'] = current_rank  # Add the rank directly to the serialized data
+            serialized_user['rank'] = current_rank 
 
             ranked_users.append(serialized_user)
 
         return Response(ranked_users)
+    
+
+class PostsFilterView(ListAPIView):
+    serializer_class = PostSerializer  
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]  
+    filterset_class = PostFilter  
+
+    def get_queryset(self):
+        return Post.objects.all()
+        
+        
