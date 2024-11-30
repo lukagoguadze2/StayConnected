@@ -1,5 +1,4 @@
-from django.db.models import Count
-from rest_framework.generics import ( 
+from rest_framework.generics import (
     RetrieveAPIView, 
     CreateAPIView,
 )
@@ -11,7 +10,7 @@ from .serializers import (
 )
 
 from .models import User
-from home.models import Comment
+from comment.models import Comment
 
 
 class SignupView(CreateAPIView):
