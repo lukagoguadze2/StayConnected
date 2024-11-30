@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     # Local apps
     'authentication',
     'home',
+    'post',
+    'comment',
 ]
 
 MIDDLEWARE = [

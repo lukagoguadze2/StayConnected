@@ -1,20 +1,6 @@
 from rest_framework import serializers
-from .models import Post, Tag
+from .models import Tag
 
-
-class CreatePostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Post
-        fields = ['title', 'description', 'tags']
-    
-    def create(self, validated_data):
-        print(validated_data)
-        tags = validated_data.pop('tags')
-        post = super().create(validated_data)
-        for tag in tags:
-            post.tags.add(tag)
-        return post
-    
 
 class CreateTagSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,5 +20,3 @@ class CreateTagSerializer(serializers.ModelSerializer):
                 )
             
         return super().create(validated_data)
-    
-
