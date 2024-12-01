@@ -41,12 +41,12 @@ test-job:
     - docker login -u "$Dockerhub" -p "$DOCKER_PASSWORD"
     - docker push $Dockerhub/python-django:latest
     - scp -r ./docker-compose.yml ubuntu@$PYTHON_PRE_PRODUCTION:/home/ubuntu/
-    - ssh -T ubuntu@$PYTHON_PRE_PRODUCTION "echo 'connecting to pre-prod' && \
-        echo 'Rebuilding docker-compose.' && \
-        docker-compose down && \
-        docker-compose pull && \
-        docker-compose up -d && \
-        docker ps"
+      ssh -T ubuntu@$PYTHON_PRE_PRODUCTION "bash -c 'echo \"connecting to pre-prod\" && \
+          echo \"Rebuilding docker-compose.\" && \
+          docker-compose down && \
+          docker-compose pull && \
+          docker-compose up -d && \
+          docker ps'"
     - echo "=====Completed====="
   rules:
     - if: '$CI_COMMIT_BRANCH == "Test"'
