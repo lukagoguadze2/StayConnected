@@ -57,7 +57,7 @@ check-database:
   tags:
     - Builder 
   script:
-      - echo "===Checking database connection===test"
+      - echo "===Checking database connection==="
       - export MYSQL_HOST=$MYSQL_HOST
       - export MYSQL_PORT=$MYSQL_PORT
       - export MYSQL_ROOT_USER=$MYSQL_ROOT_USER
