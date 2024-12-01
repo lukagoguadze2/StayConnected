@@ -20,10 +20,14 @@ from core.swagger import schema_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('authentication.urls')),
-    path('api/', include('home.urls')),
-    path('api/posts/', include('post.urls')),
-    path('api/comments/', include('comment.urls')),
+    path('api/', include(
+        [
+            path('', include('authentication.urls', namespace='auth')),
+            path('', include('home.urls', namespace='home')),
+            path('posts/', include('post.urls', namespace='post')),
+            path('comments/', include('comment.urls', namespace='comment')),
+        ]
+    )),
     path(
         'swagger/', 
         schema_view.with_ui('swagger', cache_timeout=0), 
