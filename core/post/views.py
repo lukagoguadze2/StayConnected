@@ -1,11 +1,17 @@
+from django.shortcuts import get_object_or_404
+from django.views.generic import DetailView
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import mixins, GenericViewSet
+from rest_framework.viewsets import mixins, GenericViewSet, ModelViewSet
 
-from .models import Post, PostReaction
-from .serializers import CreatePostSerializer, LikePostSerializer
+from .models import Post, PostReaction, PostSeen
+from .serializers import (
+    CreatePostSerializer,
+    LikePostSerializer,
+    PostSerializer
+)
 
 
 class PostView(mixins.ListModelMixin,
@@ -13,8 +19,6 @@ class PostView(mixins.ListModelMixin,
                mixins.UpdateModelMixin,
                GenericViewSet):
     permission_classes = [IsAuthenticated]
-    serializer_class = None
-    queryset = Post.objects.all()
 
     def __react_on_post(self, request, *args, **kwargs):
         post = self.get_object()
@@ -34,11 +38,29 @@ class PostView(mixins.ListModelMixin,
 
         return Response(status=status.HTTP_200_OK, data={'status': 'success'})
 
+    def get_queryset(self):
+        return Post.objects.annotate_with_seen_by_user(
+            user=self.request.user
+        )
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return PostSerializer
+
+        return CreatePostSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        PostSeen.objects.get_or_create(post=self.get_object(), user=request.user)
+        instance = get_object_or_404(Post.objects.prefetch_posts(), pk=self.kwargs['pk'])
+        instance.seen_by_user = True
+        serializer = self.get_serializer(instance, context={'request': request})
+        return Response(serializer.data)
+
     @action(detail=False, methods=['post'], serializer_class=CreatePostSerializer, name='create_post')
     def create_post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            serializer.save(author=request.user)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
