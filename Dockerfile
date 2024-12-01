@@ -15,12 +15,12 @@ ENV MYSQL_DB_NAME=${MYSQL_DB_NAME}
 ENV SECRET_KEY=${SECRET_KEY}
 
 
+COPY . /app/
 WORKDIR /app
 
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . ./
 RUN cd core/
 
 EXPOSE 8000
