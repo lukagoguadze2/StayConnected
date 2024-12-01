@@ -27,7 +27,7 @@ test-job:
         exit 1
       fi
 
-    - echo "===Getting Started with Python-Django Testing==="
+    - echo "===Getting Started with Python-Django Testing===1"
     - docker build --build-arg MYSQL_HOST=$MYSQL_HOST --build-arg MYSQL_PORT=$MYSQL_PORT --build-arg MYSQL_ROOT_USER=$MYSQL_ROOT_USER --build-arg MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --build-arg MYSQL_DB_NAME=$TEST_DB_NAME --build-arg SECRET_KEY=$SECRET_KEY -t $Dockerhub/python-django:latest .
     - echo "build completed"
     - echo "starting docker container for testing"
