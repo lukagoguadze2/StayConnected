@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.10.15-bullseye
 
 ARG MYSQL_HOST
 ARG MYSQL_PORT
