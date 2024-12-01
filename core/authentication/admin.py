@@ -12,4 +12,6 @@ class UserAdmin(admin.ModelAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('username',)}),
         ('Permissions', {'fields': ('is_active', 'is_staff')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+        ('Analytics', {'fields': ('rating',)}),
     )

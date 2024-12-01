@@ -29,7 +29,10 @@ class ProfileView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        self.count = Comment.objects.filter(is_correct=True, author=self.request.user.id).count()
+        self.count = Comment.objects.filter(
+            is_correct=True, 
+            author=self.request.user.id
+        ).count()
         user = User.objects.get(id=self.request.user.id)
 
         return user

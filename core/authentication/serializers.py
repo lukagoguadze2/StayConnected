@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from authentication.models import User
-from django.db.models import Count
+
 
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
