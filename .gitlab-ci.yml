@@ -28,7 +28,7 @@ test-job:
       fi
 
     - echo "===Getting Started with Python-Django Testing==="
-    - docker build --build-arg HOST=$HOST --build-arg PORT=$PORT --build-arg MYSQL_ROOT_USER=$MYSQL_ROOT_USER --build-arg MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --build-arg MYSQL_DB_NAME=$TEST_DB_NAME --build-arg SECRET_KEY=$SECRET_KEY -t $Dockerhub/python-django:latest .
+    - docker build --build-arg NYSQL_HOST=$MYSQL_HOST --build-arg MYSQL_PORT=$MYSQL_PORT --build-arg MYSQL_ROOT_USER=$MYSQL_ROOT_USER --build-arg MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --build-arg MYSQL_DB_NAME=$TEST_DB_NAME --build-arg SECRET_KEY=$SECRET_KEY -t $Dockerhub/python-django:latest .
     - echo "build completed"
     - echo "starting docker container for testing"
     - docker run -d --rm -p 8000:8000 --name python-django $Dockerhub/python-django:latest
