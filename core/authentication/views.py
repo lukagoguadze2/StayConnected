@@ -19,7 +19,7 @@ class SignupView(CreateAPIView):
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         response.data = {
-            'message': 'User registered successfully',
+            'detail': 'User registered successfully',
         }
         return response
 
@@ -29,16 +29,13 @@ class ProfileView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        self.count = Comment.objects.filter(
-            is_correct=True, 
-            author=self.request.user.id
-        ).count()
-        user = User.objects.get(id=self.request.user.id)
-
-        return user
+        return self.request.user
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['answered_questions'] = self.count
+        context['answered_questions'] = Comment.objects.filter(
+            is_correct=True,
+            author=self.request.user
+        ).count()
         return context
  

@@ -1,8 +1,10 @@
 import socket
 import psutil
 import django
+
 from django.db.models import Window, OrderBy, F
 from django.db.models.functions import RowNumber
+from django.db import connection, DatabaseError
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -96,3 +98,30 @@ class HealthcheckAPIView(APIView):
         }
 
         return Response(data)
+
+
+class DatabaseHealthcheckAPIView(APIView):
+    """
+    A health check API to verify database connection status and basic information.
+    """
+
+    def get(self, request, *args, **kwargs):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1;")
+            db_status = "healthy"
+            status_code = 200
+        except DatabaseError as e:
+            db_status = "unhealthy"
+            status_code = 503
+
+        db_info = {
+            "status": db_status,
+            "status_code": status_code,
+            "database_engine": connection.settings_dict["ENGINE"],
+            "database_name": connection.settings_dict["NAME"],
+            "host": connection.settings_dict["HOST"],
+            "port": connection.settings_dict["PORT"],
+        }
+
+        return Response(db_info, status=status_code)
