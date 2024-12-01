@@ -67,13 +67,19 @@ class CommentView(GenericViewSet):
     def unmark_correct(self, request, *args, **kwargs):
         comment = self.get_object()    
         
-        if Comment.objects.filter(post=comment.post, is_correct=False).exists():
+        if not Comment.objects.filter(post=comment.post, is_correct=True).exists():
             raise ValidationError({'detail': 'This post is not marked as correct yet.'})
-            
+        if not comment.is_correct:
+            raise ValidationError({'detail': 'This comment is not marked as correct.'})
+
         comment.is_correct = False
         comment.save()
         return Response({'detail': 'Comment unmarked as correct'})
-    
+
+    # This method is not used in the project
+    def list(self, request, *args, **kwargs):
+        return Response(status=404)
+
 
 class PostCommentsView(ListAPIView):
     serializer_class = GetPostCommentsSerializer
@@ -81,5 +87,10 @@ class PostCommentsView(ListAPIView):
 
     def get_queryset(self):
         post_id = self.kwargs['post_id'] 
-        return Comment.objects.filter(post_id=post_id)
+        return (
+            Comment.objects
+            .prefetch_related('author')
+            .prefetch_related('post')
+            .filter(post_id=post_id)
+        )
     
