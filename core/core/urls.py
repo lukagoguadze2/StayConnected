@@ -23,5 +23,10 @@ urlpatterns = [
     path('api/', include('authentication.urls')),
     path('api/', include('home.urls')),
     path('api/posts/', include('post.urls')),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/comments/', include('comment.urls')),
+    path(
+        'swagger/', 
+        schema_view.with_ui('swagger', cache_timeout=0), 
+        name='schema-swagger-ui'
+    ),
 ]
