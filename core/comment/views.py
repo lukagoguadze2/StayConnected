@@ -13,6 +13,8 @@ from .serializers import (
 )
 from .permissions import IsPostOwner
 
+from home import ratings
+
 
 class CommentView(GenericViewSet):
     queryset = Comment.objects.all()
@@ -27,7 +29,12 @@ class CommentView(GenericViewSet):
         serializer_class=CreateCommentSerializer,
     )
     def create_comment(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={'author': request.user})
+        serializer = self.get_serializer(
+            data=request.data, 
+            context={
+                'author': request.user
+            }
+        )
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
@@ -47,10 +54,19 @@ class CommentView(GenericViewSet):
         comment = self.get_object()
         
         if Comment.objects.filter(post=comment.post, is_correct=True).exists():
-            raise ValidationError({'detail': 'This post already has a correct answer.'})
+            raise ValidationError(
+                {'detail': 'This post already has a correct answer.'}
+            )
         
         comment.is_correct = True
         comment.save()
+        
+        author = comment.author
+        author.update_rating(ratings.COMMENT_MARK_AS_ANSWER)
+        
+        post_author = comment.post.author
+        post_author.update_rating(ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
+        
         return Response({'detail': 'Comment marked as correct'})
     
     @action(
@@ -68,9 +84,13 @@ class CommentView(GenericViewSet):
         comment = self.get_object()    
         
         if not Comment.objects.filter(post=comment.post, is_correct=True).exists():
-            raise ValidationError({'detail': 'This post is not marked as correct yet.'})
+            raise ValidationError(
+                {'detail': 'This post is not marked as correct yet.'}
+            )
         if not comment.is_correct:
-            raise ValidationError({'detail': 'This comment is not marked as correct.'})
+            raise ValidationError(
+                {'detail': 'This comment is not marked as correct.'}
+            )
 
         comment.is_correct = False
         comment.save()

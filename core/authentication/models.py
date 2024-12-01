@@ -39,7 +39,21 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     rating = models.IntegerField(default=0)
+    last_activity = models.DateTimeField(auto_now=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
     objects = UserManager()
+
+    def save(self, *args, **kwargs):
+        if self.rating < 0:
+            self.rating = 0
+
+        super().save(*args, **kwargs)
+
+    def update_rating(self, rating):
+        self.rating += rating
+        self.save()
+
+    def str(self):
+        return self.email
