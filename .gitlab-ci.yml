@@ -8,7 +8,7 @@ test-job:
   tags:
     - Builder 
   script:
-    - echo "Running tests on Test branch"
+    - echo "Running tests on Test branch1"
     - echo "Checking mysql connection"
     - export MYSQL_HOST=$MYSQL_HOST
     - export MYSQL_PORT=$MYSQL_PORT
