@@ -10,8 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-import os
-
 from datetime import timedelta
 from pathlib import Path
 from decouple import config
@@ -93,18 +91,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-databases_env = config("DATABASES", "").split(',')
-
-# Ensure at least two database names are provided
-MYSQL_DB_NAME = databases_env[0] if len(databases_env) > 0 else None
-TEST_DB_NAME = databases_env[1] if len(databases_env) > 1 else None
-
-del databases_env
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': TEST_DB_NAME if DEBUG else MYSQL_DB_NAME,
+        'NAME': config('MYSQL_DB_NAME'),
         'USER': config('MYSQL_ROOT_USER'),
         'PASSWORD': config('MYSQL_ROOT_PASSWORD'),
         'HOST': config('MYSQL_HOST'),
