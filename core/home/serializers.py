@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from authentication.models import User
 from .models import Tag
 
 
@@ -25,4 +27,19 @@ class CreateTagSerializer(serializers.ModelSerializer):
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ['title']
+        fields = ['id', 'title']
+
+
+class LeaderBoardSerializer(serializers.ModelSerializer):
+    answered_questions = serializers.SerializerMethodField()
+    rank = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'rating', 'answered_questions', 'rank')
+
+    def get_answered_questions(self, obj):
+        return self.context.get('answered_questions', 0)
+
+    def get_rank(self, obj):
+        return obj.rank

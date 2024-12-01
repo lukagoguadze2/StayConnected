@@ -4,7 +4,7 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'is_active', 'is_staff')
+    list_display = ('username', 'email', 'rating', 'is_active', 'is_staff')
     list_filter = ('is_active', 'is_staff')
     search_fields = ('email', 'username')
     ordering = ('email',)
@@ -15,3 +15,4 @@ class UserAdmin(admin.ModelAdmin):
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
         ('Analytics', {'fields': ('rating',)}),
     )
+    list_editable = ('rating',)

@@ -1,6 +1,8 @@
 import socket
 import psutil
 import django
+from django.db.models import Window, OrderBy, F
+from django.db.models.functions import RowNumber
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,7 +19,7 @@ from post.models import Post
 from .filters import PostFilter
 from authentication.models import User
 from post.serializers import PostSerializer
-from authentication.serializers import UserProfileSerializer
+from .serializers import LeaderBoardSerializer
 
 
 class CreateTagView(CreateAPIView):
@@ -34,30 +36,17 @@ class GetTagsView(ListAPIView):
 
 
 class LeaderboardView(ListAPIView):
-    serializer_class = UserProfileSerializer
+    serializer_class = LeaderBoardSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return User.objects.order_by('-rating')
+        return User.objects.annotate(
+            rank=Window(
+                expression=RowNumber(),
+                order_by=OrderBy(F('rating'), descending=True)
+            )
+        )
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        ranked_users = []
-        previous_rating = None
-        current_rank = 0
-
-        for index, user in enumerate(queryset, start=1):
-            if user.rating != previous_rating:
-                current_rank = index
-                previous_rating = user.rating
-
-            serialized_user = UserProfileSerializer(user).data
-            serialized_user['rank'] = current_rank 
-
-            ranked_users.append(serialized_user)
-
-        return Response(ranked_users)
-    
 
 class PostsFilterView(ListAPIView):
     serializer_class = PostSerializer
