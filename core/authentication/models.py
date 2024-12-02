@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import validate_email
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.hashers import make_password
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import BaseUserManager
 
@@ -48,6 +49,11 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         if self.rating < 0:
             self.rating = 0
+
+        if self.password and not self.password.startswith(
+                ('pbkdf2_sha256$', 'bcrypt$', 'argon2')
+            ):
+            self.password = make_password(self.password)
 
         super().save(*args, **kwargs)
 

@@ -3,12 +3,14 @@ from django.urls import include, path
 from authentication.views import (
     LoginView,
     SignupView,
+    LogOutView,
     ProfileView,
-    PersonalPostView
+    PersonalPostView,
+    ResetPasswordView,
+    ResetPasswordRequestView
 )
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
-    TokenBlacklistView
 )
 
 app_name = 'auth'
@@ -18,7 +20,9 @@ urlpatterns = [
             [
                 path('signup/', SignupView.as_view(), name='signup'),
                 path('login/', LoginView.as_view(), name='login'),
-                path('logout/', TokenBlacklistView.as_view(), name='logout'),
+                path('logout/', LogOutView.as_view(), name='logout'),
+                path('reset-password/', ResetPasswordView.as_view(), name='reset-password'),
+                path('reset-password-request/', ResetPasswordRequestView.as_view(), name='reset-password-request'),
             ]
         )
     ),

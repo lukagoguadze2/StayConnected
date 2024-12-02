@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import check_password
 from rest_framework import serializers
 from authentication.models import User
 
@@ -62,3 +63,25 @@ class UserProfileSerializer(serializers.ModelSerializer):
         
     def get_answered_questions(self, obj):
         return self.context.get('answered_questions', 0)
+
+
+class ResetPasswordRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    
+class ResetPasswordSerializer(SignupSerializer):
+    
+    class Meta:
+        model = User
+        fields = ('email', 'password', 'password_2')
+        
+    def validate(self, attrs):
+        password = attrs.get('password')
+        
+        user = User.objects.filter(email=attrs.get('email')).first()
+        if user and check_password(password, user.password): 
+            raise serializers.ValidationError(
+                "New password must be different from the current password."
+            )
+        
+        return super().validate(attrs)
