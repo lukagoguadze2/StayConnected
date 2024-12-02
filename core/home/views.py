@@ -32,9 +32,7 @@ class CreateTagView(CreateAPIView):
 class GetTagsView(ListAPIView):
     serializer_class = TagSerializer
     permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Tag.objects.all()
+    queryset = Tag.objects.all()
 
 
 class LeaderboardView(ListAPIView):
