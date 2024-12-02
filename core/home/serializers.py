@@ -43,3 +43,7 @@ class LeaderBoardSerializer(serializers.ModelSerializer):
 
     def get_rank(self, obj):
         return obj.rank
+
+
+class EmptySerializer(serializers.Serializer):
+    pass
