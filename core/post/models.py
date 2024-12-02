@@ -1,5 +1,6 @@
 from django.db import models
 from authentication.models import User
+
 from home.models import Tag
 from .managers import PostManager
 
@@ -46,8 +47,16 @@ class PostReaction(models.Model):
 
 
 class PostSeen(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="seen_relationships")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="seen_relationships")
+    post = models.ForeignKey(
+        Post, 
+        on_delete=models.CASCADE, 
+        related_name="seen_relationships"
+    )
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name="seen_relationships"
+    )
     seen_at = models.DateTimeField(auto_now_add=True)  # Timestamp for when the user saw the post
 
     class Meta:

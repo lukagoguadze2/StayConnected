@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+
 from core.swagger import schema_view
 
 urlpatterns = [

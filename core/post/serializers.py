@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from home.serializers import TagSerializer
 from authentication.serializers import UserProfileSerializer
+
 from .models import Post
+from home.serializers import TagSerializer
 
 
 class CreatePostSerializer(serializers.ModelSerializer):

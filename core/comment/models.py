@@ -1,6 +1,7 @@
 from django.db import models
-from authentication.models import User
+
 from post.models import Post
+from authentication.models import User
 
 
 class Comment(models.Model):
@@ -22,12 +23,15 @@ class Comment(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.author:
-            self.author, created = User.objects.get_or_create(username='DeletedUser')
+            self.author, created = User.objects.get_or_create(
+                username='DeletedUser'
+            )
 
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return 'Correct' if self.is_correct else 'Incorrect' + f' answer by {self.author} - post: {self.post.id}'
+        status = 'Correct' if self.is_correct else 'Incorrect'
+        return f'{status} answer by {self.author} - post: {self.post.id}'
 
 
 class CommentReaction(models.Model):
@@ -47,5 +51,6 @@ class CommentReaction(models.Model):
         unique_together = ('author', 'comment')
 
     def __str__(self):
-        return 'dis' if not self.reaction_type else '' + f'liked by {self.author} - comment: {self.comment.id}'
+        prefix = 'dis' if not self.reaction_type else ''
+        return f'{prefix}liked by {self.author} - comment: {self.comment.id}'
 

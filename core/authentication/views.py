@@ -1,23 +1,21 @@
 from rest_framework.generics import (
-    RetrieveAPIView,
+    ListAPIView,
     CreateAPIView,
-    ListAPIView
+    RetrieveAPIView
 )
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from post.serializers import PostSerializer
 from .serializers import (
     SignupSerializer,
-    UserProfileSerializer,
+    UserProfileSerializer
 )
 
 from .models import User
+from home import ratings
 from post.models import Post
 from comment.models import Comment
-
-from rest_framework_simplejwt.views import TokenObtainPairView
-
-from home import ratings
 
 
 class SignupView(CreateAPIView):

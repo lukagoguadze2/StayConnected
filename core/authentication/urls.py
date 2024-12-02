@@ -1,9 +1,10 @@
 from django.urls import include, path
+
 from authentication.views import (
-    SignupView,
-    PersonalPostView,
-    ProfileView,
     LoginView,
+    SignupView,
+    ProfileView,
+    PersonalPostView
 )
 from rest_framework_simplejwt.views import (
     TokenRefreshView,

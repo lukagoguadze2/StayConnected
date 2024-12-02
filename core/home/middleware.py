@@ -1,7 +1,8 @@
-from django.utils.timezone import now
 import logging
-from django.db import connection
 from time import sleep
+
+from django.db import connection
+from django.utils.timezone import now
 from rest_framework.response import Response
 
 from home import ratings
@@ -22,14 +23,19 @@ class DatabaseRetryMiddleware:
             except Exception as e:
                 retries -= 1
                 logger.error(
-                    f"Database connection failed (retries left: {retries}). Error: {e}",
+                    f"Database connection failed (retries left: {retries})." 
+                    f"Error: {e}",
                     exc_info=True
                 )
                 if retries == 0:
-                    logger.critical("Database connection failed after multiple retries.")
+                    logger.critical(
+                        "Database connection failed after multiple retries."
+                    )
                     return Response(
                         {
-                            "detail": "Service temporarily unavailable due to database failure."
+                            "detail": (
+                                "Service temporarily unavailable due to database failure."
+                            )
                         },
                         status=503
                     )
@@ -49,7 +55,9 @@ class UserActivityMiddleware:
             last_activity = request.user.last_activity
             inactive_days = (current_time - last_activity).days
             if inactive_days > 1:
-                request.user.update_rating(ratings.INACTIVITY_PENALTY * inactive_days)
+                request.user.update_rating(
+                    ratings.INACTIVITY_PENALTY * inactive_days
+                )
 
             request.user.last_activity = now()
             request.user.save()

@@ -1,5 +1,6 @@
 import django_filters
 from django.db import models
+
 from post.models import Post
 
 class PostFilter(django_filters.FilterSet):
@@ -19,5 +20,6 @@ class PostFilter(django_filters.FilterSet):
 
     def filter_by_title_and_description(self, queryset, name, value):
         return queryset.filter(
-            models.Q(title__icontains=value) | models.Q(description__icontains=value)
+            models.Q(title__icontains=value) | 
+            models.Q(description__icontains=value)
         )

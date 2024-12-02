@@ -1,24 +1,26 @@
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
-from rest_framework.mixins import DestroyModelMixin
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.mixins import DestroyModelMixin
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.exceptions import ValidationError, NotFound
 
 from home.serializers import EmptySerializer
-from post.serializers import LikePostSerializer
 from .models import Comment, CommentReaction
+from post.serializers import LikePostSerializer
 from .serializers import (
     CreateCommentSerializer,
     GetPostCommentsSerializer,
 )
 from .permissions import IsPostOwner
 from home import ratings
-from home.reactions import react_on_entity, remove_reaction, update_reaction
-
-from home import ratings
+from home.reactions import (
+    react_on_entity, 
+    remove_reaction, 
+    update_reaction
+)
 
 
 class CommentView(DestroyModelMixin, GenericViewSet):
@@ -103,7 +105,12 @@ class CommentView(DestroyModelMixin, GenericViewSet):
         comment.save()
         return Response({'detail': 'Comment unmarked as correct'})
 
-    @action(detail=True, methods=['post'], serializer_class=EmptySerializer, name='like_post')
+    @action(
+        detail=True, 
+        methods=['post'], 
+        serializer_class=EmptySerializer, 
+        name='like_post'
+    )
     def like_comment(self, request, *args, **kwargs):
         return react_on_entity(
             request, *args, **kwargs,
@@ -112,7 +119,12 @@ class CommentView(DestroyModelMixin, GenericViewSet):
             reaction_type=CommentReaction.LIKE
         )
 
-    @action(detail=True, methods=['post'], serializer_class=EmptySerializer, name='dislike_post')
+    @action(
+        detail=True, 
+        methods=['post'], 
+        serializer_class=EmptySerializer, 
+        name='dislike_post'
+    )
     def dislike_comment(self, request, *args, **kwargs):
         return react_on_entity(
             request, *args, **kwargs,
@@ -121,7 +133,12 @@ class CommentView(DestroyModelMixin, GenericViewSet):
             reaction_type=CommentReaction.DISLIKE
         )
 
-    @action(detail=True, methods=['delete'], serializer_class=EmptySerializer, name='remove_reaction')
+    @action(
+        detail=True, 
+        methods=['delete'], 
+        serializer_class=EmptySerializer, 
+        name='remove_reaction'
+    )
     def remove_reaction(self, request, *args, **kwargs):
         return remove_reaction(
             request, *args, **kwargs,
@@ -129,7 +146,12 @@ class CommentView(DestroyModelMixin, GenericViewSet):
             object='comment'
         )
 
-    @action(detail=True, methods=['put'], serializer_class=LikePostSerializer, name='like_post')
+    @action(
+        detail=True, 
+        methods=['put'], 
+        serializer_class=LikePostSerializer, 
+        name='like_post'
+    )
     def update_reaction(self, request, *args, **kwargs):
         return update_reaction(
             request, *args, **kwargs,

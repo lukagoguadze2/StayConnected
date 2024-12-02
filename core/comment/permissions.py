@@ -3,7 +3,8 @@ from rest_framework.permissions import BasePermission
 
 class IsPostOwner(BasePermission):
     """
-    Custom permission to allow only the owner of the post to perform the action.
+    Custom permission to allow only the owner of the post to perform
+    the action.
     """
 
     def has_object_permission(self, request, view, obj):

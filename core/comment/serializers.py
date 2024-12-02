@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from authentication.serializers import UserProfileSerializer
 from .models import Comment
+from authentication.serializers import UserProfileSerializer
 
 
 class CreateCommentSerializer(serializers.ModelSerializer):
@@ -27,5 +27,12 @@ class GetPostCommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'author', 'post_id', 'content', 'date_answered', 'is_correct']
+        fields = [
+            'id', 
+            'author', 
+            'post_id', 
+            'content', 
+            'date_answered', 
+            'is_correct'
+        ]
 

@@ -23,11 +23,15 @@ def react_on_entity(self, request, *_, **kwargs):
     )
 
     if not created:
+        prefix = '' if reaction.reaction_type else 'dis'
         return Response(
             {
-                "detail": f"User have already {'' if reaction.reaction_type else 'dis'}liked this {object_type}."
+                "detail": (
+                    f"User have already {prefix}liked this {object_type}."
+                )
             },
-            status=status.HTTP_409_CONFLICT)
+            status=status.HTTP_409_CONFLICT
+        )
 
     reaction.reaction_type = reaction_type
 
@@ -70,17 +74,29 @@ def remove_reaction(self, request, *_, **kwargs):
         )
         if object_type == 'post':
             if reaction.reaction_type == reaction_model.LIKE:
-                object_model.author.update_rating(-ratings.POST_LIKE * bool(request.user.rating))
+                object_model.author.update_rating(
+                    -ratings.POST_LIKE * bool(request.user.rating)
+                )
             else:
-                object_model.author.update_rating(-ratings.POST_DISLIKE * bool(request.user.rating))
-                request.user.update_rating(-ratings.USER_DISLIKED_POST * bool(request.user.rating))
+                object_model.author.update_rating(
+                    -ratings.POST_DISLIKE * bool(request.user.rating)
+                )
+                request.user.update_rating(
+                    -ratings.USER_DISLIKED_POST * bool(request.user.rating)
+                )
 
         elif object_type == 'comment':
             if reaction.reaction_type == reaction_model.LIKE:
-                object_model.author.update_rating(-ratings.COMMENT_LIKE * bool(request.user.rating))
+                object_model.author.update_rating(
+                    -ratings.COMMENT_LIKE * bool(request.user.rating)
+                )
             else:
-                object_model.author.update_rating(-ratings.COMMENT_DISLIKE * bool(request.user.rating))
-                request.user.update_rating(-ratings.USER_DISLIKED_COMMENT * bool(request.user.rating))
+                object_model.author.update_rating(
+                    -ratings.COMMENT_DISLIKE * bool(request.user.rating)
+                )
+                request.user.update_rating(
+                    -ratings.USER_DISLIKED_COMMENT * bool(request.user.rating)
+                )
         else:
             raise ValueError('Invalid object type.')
 
@@ -89,7 +105,9 @@ def remove_reaction(self, request, *_, **kwargs):
     except reaction_model.DoesNotExist:
         return Response(
             status=status.HTTP_404_NOT_FOUND,
-            data={'detail': f'User have not reacted to this {object_type} yet.'}
+            data={
+                'detail': f'User have not reacted to this {object_type} yet.'
+            }
         )
 
     return Response(status=status.HTTP_200_OK, data={'detail': 'success'})
@@ -117,12 +135,19 @@ def update_reaction(self, request, *_, **kwargs):
         except reaction_model.DoesNotExist:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
-                data={'detail': f'User have not reacted to this {object_type} yet.'}
+                data={
+                    'detail': (
+                        f'User have not reacted to this {object_type} yet.'
+                    )
+                }
             )
 
         rt = serializer.validated_data['reaction_type']
         if reaction.reaction_type == rt:
-            return Response(status=status.HTTP_200_OK, data={'detail': 'success'})
+            return Response(
+                status=status.HTTP_200_OK, 
+                data={'detail': 'success'}
+            )
 
         reaction.reaction_type = serializer.validated_data['reaction_type']
 
@@ -136,7 +161,9 @@ def update_reaction(self, request, *_, **kwargs):
                     abs(ratings.USER_DISLIKED_POST) * bool(request.user.rating)
                 )
             else:
-                object_model.author.update_rating(ratings.POST_DISLIKE - ratings.POST_LIKE)
+                object_model.author.update_rating(
+                    ratings.POST_DISLIKE - ratings.POST_LIKE
+                )
                 request.user.update_rating(ratings.USER_DISLIKED_POST)
 
         elif object_type == 'comment':
@@ -145,9 +172,13 @@ def update_reaction(self, request, *_, **kwargs):
                     ratings.COMMENT_LIKE +
                     abs(ratings.COMMENT_DISLIKE) * bool(request.user.rating)
                 )
-                request.user.update_rating(abs(ratings.USER_DISLIKED_COMMENT) * bool(request.user.rating))
+                request.user.update_rating(
+                    abs(ratings.USER_DISLIKED_COMMENT) * bool(request.user.rating)
+                )
             else:
-                object_model.author.update_rating(ratings.COMMENT_DISLIKE - ratings.COMMENT_LIKE)
+                object_model.author.update_rating(
+                    ratings.COMMENT_DISLIKE - ratings.COMMENT_LIKE
+                )
                 request.user.update_rating(ratings.USER_DISLIKED_COMMENT)
 
         reaction.save()

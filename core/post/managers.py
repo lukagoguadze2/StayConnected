@@ -1,6 +1,6 @@
 from django.apps import apps
 from django.db import models
-from django.db.models import Exists, OuterRef, Q, Count, Subquery
+from django.db.models import Exists, OuterRef, Q, Count
 
 
 class PostManager(models.Manager):
@@ -44,5 +44,4 @@ class PostManager(models.Manager):
                         is_correct=True
                     )
                 )
-
-        )
+            )

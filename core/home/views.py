@@ -13,8 +13,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.generics import CreateAPIView, ListAPIView
 
 from .serializers import (
-    CreateTagSerializer,
     TagSerializer,
+    CreateTagSerializer
 )
 from .models import Tag
 from post.models import Post
@@ -100,7 +100,8 @@ class HealthcheckAPIView(APIView):
 
 class DatabaseHealthcheckAPIView(APIView):
     """
-    A health check API to verify database connection status and basic information.
+    A health check API to verify database connection status and basic
+    information.
     """
 
     def get(self, request, *args, **kwargs):
