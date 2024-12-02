@@ -18,6 +18,12 @@ class Post(models.Model):
 
     objects = PostManager()
 
+    class Meta:
+        ordering = ['-date_posted']
+
+    def __str__(self):
+        return self.title
+
 
 class PostReaction(models.Model):
     LIKE = 1
@@ -29,11 +35,14 @@ class PostReaction(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    reaction_type = models.BooleanField(choices=REACTION_CHOICES)
+    reaction_type = models.BooleanField(choices=REACTION_CHOICES, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('user', 'post')
+
+    def __str__(self):
+        return f'{self.user} - {self.post}'
 
 
 class PostSeen(models.Model):
