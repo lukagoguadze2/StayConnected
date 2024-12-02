@@ -55,5 +55,5 @@ class User(AbstractUser):
         self.rating += rating
         self.save()
 
-    def str(self):
+    def __str__(self):
         return self.email

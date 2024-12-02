@@ -1,15 +1,18 @@
 from rest_framework.generics import (
-    RetrieveAPIView, 
+    RetrieveAPIView,
     CreateAPIView,
+    ListAPIView
 )
 from rest_framework.permissions import IsAuthenticated
 
+from post.serializers import PostSerializer
 from .serializers import (
-    SignupSerializer, 
+    SignupSerializer,
     UserProfileSerializer,
 )
 
 from .models import User
+from post.models import Post
 from comment.models import Comment
 
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -55,3 +58,16 @@ class LoginView(TokenObtainPairView):
             except User.DoesNotExist:
                 pass
         return super().post(request, *args, **kwargs)
+
+
+class PersonalPostView(ListAPIView):
+    """View to list personal posts of the authenticated user."""
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Post.objects.annotate_with_seen_by_user(
+            user=self.request.user
+        ).filter(
+            author=self.request.user
+        )

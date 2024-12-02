@@ -1,6 +1,7 @@
 from django.urls import include, path
 from authentication.views import (
     SignupView,
+    PersonalPostView,
     ProfileView,
     LoginView,
 )
@@ -22,5 +23,6 @@ urlpatterns = [
     ),
     
     path('profile/', ProfileView.as_view(), name='profile'),
+    path('profile/posts/', PersonalPostView.as_view(), name='profile-posts'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
