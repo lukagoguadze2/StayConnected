@@ -110,7 +110,7 @@ class DatabaseHealthcheckAPIView(APIView):
                 cursor.execute("SELECT 1;")
             db_status = "healthy"
             status_code = 200
-        except DatabaseError as e:
+        except DatabaseError:
             db_status = "unhealthy"
             status_code = 503
 

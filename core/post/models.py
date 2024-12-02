@@ -36,7 +36,7 @@ class PostReaction(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    reaction_type = models.BooleanField(choices=REACTION_CHOICES, null=True)
+    reaction_type = models.BooleanField(choices=REACTION_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

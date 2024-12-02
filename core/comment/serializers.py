@@ -27,12 +27,12 @@ class GetPostCommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = [
+        fields = (
             'id', 
             'author', 
             'post_id', 
             'content', 
             'date_answered', 
             'is_correct'
-        ]
+        )
 

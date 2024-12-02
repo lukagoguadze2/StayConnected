@@ -116,7 +116,7 @@ class PostView(mixins.ListModelMixin,
         detail=True, 
         methods=['put'], 
         serializer_class=LikePostSerializer, 
-        name='like_post'
+        name='update_reaction'
     )
     def update_reaction(self, request, *args, **kwargs):
         return update_reaction(
