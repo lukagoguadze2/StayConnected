@@ -1,26 +1,31 @@
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.generics import ListAPIView
+from rest_framework.mixins import DestroyModelMixin
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.permissions import IsAuthenticated
 
-
-from .models import Comment
+from home.serializers import EmptySerializer
+from post.serializers import LikePostSerializer
+from .models import Comment, CommentReaction
 from .serializers import (
     CreateCommentSerializer,
     GetPostCommentsSerializer,
 )
 from .permissions import IsPostOwner
+from home import ratings
+from home.reactions import react_on_entity, remove_reaction, update_reaction
 
 from home import ratings
 
 
-class CommentView(GenericViewSet):
-    queryset = Comment.objects.all()
+class CommentView(DestroyModelMixin, GenericViewSet):
+    queryset = Comment.objects.prefetch_related('author')
     serializer_class = CreateCommentSerializer
     permission_classes = [IsAuthenticated]
-    
+
     @action(
         detail=False, 
         methods=['post'], 
@@ -48,7 +53,7 @@ class CommentView(GenericViewSet):
             IsAuthenticated, 
             IsPostOwner,
         ],
-        serializer_class=None,
+        serializer_class=EmptySerializer,
     )
     def mark_correct(self, request, *args, **kwargs):
         comment = self.get_object()
@@ -59,6 +64,7 @@ class CommentView(GenericViewSet):
             )
         
         comment.is_correct = True
+        comment.author.update_rating(ratings.COMMENT_MARKED_AS_ANSWER)
         comment.save()
         
         author = comment.author
@@ -78,7 +84,7 @@ class CommentView(GenericViewSet):
             IsAuthenticated, 
             IsPostOwner,
         ],
-        serializer_class=None,
+        serializer_class=EmptySerializer,
     )
     def unmark_correct(self, request, *args, **kwargs):
         comment = self.get_object()    
@@ -93,24 +99,61 @@ class CommentView(GenericViewSet):
             )
 
         comment.is_correct = False
+        comment.author.update_rating(-ratings.COMMENT_MARKED_AS_ANSWER)
         comment.save()
         return Response({'detail': 'Comment unmarked as correct'})
 
-    # This method is not used in the project
-    def list(self, request, *args, **kwargs):
-        return Response(status=404)
+    @action(detail=True, methods=['post'], serializer_class=EmptySerializer, name='like_post')
+    def like_comment(self, request, *args, **kwargs):
+        return react_on_entity(
+            request, *args, **kwargs,
+            model=CommentReaction,
+            object='comment',
+            reaction_type=CommentReaction.LIKE
+        )
+
+    @action(detail=True, methods=['post'], serializer_class=EmptySerializer, name='dislike_post')
+    def dislike_comment(self, request, *args, **kwargs):
+        return react_on_entity(
+            request, *args, **kwargs,
+            model=CommentReaction,
+            object='comment',
+            reaction_type=CommentReaction.DISLIKE
+        )
+
+    @action(detail=True, methods=['delete'], serializer_class=EmptySerializer, name='remove_reaction')
+    def remove_reaction(self, request, *args, **kwargs):
+        return remove_reaction(
+            request, *args, **kwargs,
+            model=CommentReaction,
+            object='comment'
+        )
+
+    @action(detail=True, methods=['put'], serializer_class=LikePostSerializer, name='like_post')
+    def update_reaction(self, request, *args, **kwargs):
+        return update_reaction(
+            request, *args, **kwargs,
+            model=CommentReaction,
+            object='comment'
+        )
+
+
+class CommentPagination(PageNumberPagination):
+    page_size = 10
 
 
 class PostCommentsView(ListAPIView):
     serializer_class = GetPostCommentsSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = CommentPagination
 
     def get_queryset(self):
-        post_id = self.kwargs['post_id'] 
+        post_id = self.kwargs.get('post_id')
+        if not post_id or not Comment.objects.filter(post_id=post_id).exists():
+            raise NotFound("Post with the given ID does not exist.")
+        
         return (
             Comment.objects
-            .prefetch_related('author')
-            .prefetch_related('post')
+            .prefetch_related('author', 'post')
             .filter(post_id=post_id)
         )
-    
