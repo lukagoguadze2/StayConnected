@@ -26,6 +26,9 @@ class Comment(models.Model):
 
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return 'Correct' if self.is_correct else 'Incorrect' + f' answer by {self.author} - post: {self.post.id}'
+
 
 class CommentReaction(models.Model):
     LIKE = 1
@@ -35,11 +38,14 @@ class CommentReaction(models.Model):
         (DISLIKE, 'Dislike')
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
     reaction_type = models.BooleanField(choices=REACTION_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'comment')
+        unique_together = ('author', 'comment')
+
+    def __str__(self):
+        return 'dis' if not self.reaction_type else '' + f'liked by {self.author} - comment: {self.comment.id}'
 
