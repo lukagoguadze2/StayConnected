@@ -26,6 +26,7 @@ class PostView(mixins.ListModelMixin,
                mixins.DestroyModelMixin,
                mixins.UpdateModelMixin,
                GenericViewSet):
+    serializer_class = EmptySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -116,7 +117,7 @@ class PostView(mixins.ListModelMixin,
         detail=True, 
         methods=['put'], 
         serializer_class=LikePostSerializer, 
-        name='like_post'
+        name='update_reaction'
     )
     def update_reaction(self, request, *args, **kwargs):
         return update_reaction(

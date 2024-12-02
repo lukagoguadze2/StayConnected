@@ -1,5 +1,9 @@
+from typing import Literal
 from rest_framework import status
 from rest_framework.response import Response
+
+from post.models import PostReaction, Post
+from comment.models import CommentReaction, Comment
 
 from home import ratings
 
@@ -12,17 +16,17 @@ def react_on_entity(self, request, *_, **kwargs):
         object (str): Object type (post/comment)
         reaction_type: Reaction type (true/false)
     """
-    reaction_model = kwargs.pop("model")
-    object_type = kwargs.pop("object")
-    reaction_type = kwargs.pop('reaction_type')
-    object_model = self.get_object()
+    reaction_model: PostReaction | CommentReaction = kwargs.pop("model")
+    object_type: Literal['post', 'comment'] = kwargs.pop("object")
+    reaction_type: bool = kwargs.pop('reaction_type')
+    object_model: Post | Comment = self.get_object()
 
-    reaction, created = reaction_model.objects.get_or_create(
+    reaction = reaction_model.objects.filter(
         user=request.user,
         **{object_type: object_model}
-    )
+    ).first()
 
-    if not created:
+    if not reaction:
         prefix = '' if reaction.reaction_type else 'dis'
         return Response(
             {
@@ -33,7 +37,11 @@ def react_on_entity(self, request, *_, **kwargs):
             status=status.HTTP_409_CONFLICT
         )
 
-    reaction.reaction_type = reaction_type
+    reaction = reaction_model.objects.create(
+        user=request.user,
+        **{object_type: object_model},
+        reaction_type=reaction_type
+    )
 
     if object_type == 'post':
         if reaction_type == reaction_model.LIKE:
@@ -64,9 +72,9 @@ def remove_reaction(self, request, *_, **kwargs):
         model: Reaction model
         object (str): Object type (post/comment)
     """
-    reaction_model = kwargs.pop("model")
-    object_type = kwargs.pop("object")
-    object_model = self.get_object()
+    reaction_model: PostReaction | CommentReaction = kwargs.pop("model")
+    object_type: Literal['post', 'comment'] = kwargs.pop("object")
+    object_model: Post | Comment = self.get_object()
     try:
         reaction = reaction_model.objects.get(
             user=request.user,
@@ -121,9 +129,9 @@ def update_reaction(self, request, *_, **kwargs):
         model: Reaction model
         object (str): Object type (post/comment)
     """
-    reaction_model = kwargs.pop("model")
-    object_type = kwargs.pop("object")
-    object_model = self.get_object()
+    reaction_model: PostReaction | CommentReaction = kwargs.pop("model")
+    object_type: Literal['post', 'comment'] = kwargs.pop("object")
+    object_model: Post | Comment = self.get_object()
     serializer = self.get_serializer(data=request.data)
 
     if serializer.is_valid(raise_exception=True):

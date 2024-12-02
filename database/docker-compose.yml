@@ -1,0 +1,16 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: saba2000dvali2000/mysql-database:latest
+    container_name: mysql-container
+    restart: always
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+
+volumes:
+  mysql_data:
+    driver: local

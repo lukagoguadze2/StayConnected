@@ -70,7 +70,7 @@ class CommentView(DestroyModelMixin, GenericViewSet):
         comment.save()
         
         author = comment.author
-        author.update_rating(ratings.COMMENT_MARK_AS_ANSWER)
+        author.update_rating(ratings.COMMENT_MARKED_AS_ANSWER)
         
         post_author = comment.post.author
         post_author.update_rating(ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
@@ -109,7 +109,7 @@ class CommentView(DestroyModelMixin, GenericViewSet):
         detail=True, 
         methods=['post'], 
         serializer_class=EmptySerializer, 
-        name='like_post'
+        name='like_comment'
     )
     def like_comment(self, request, *args, **kwargs):
         return react_on_entity(
@@ -123,7 +123,7 @@ class CommentView(DestroyModelMixin, GenericViewSet):
         detail=True, 
         methods=['post'], 
         serializer_class=EmptySerializer, 
-        name='dislike_post'
+        name='dislike_comment'
     )
     def dislike_comment(self, request, *args, **kwargs):
         return react_on_entity(
@@ -150,7 +150,7 @@ class CommentView(DestroyModelMixin, GenericViewSet):
         detail=True, 
         methods=['put'], 
         serializer_class=LikePostSerializer, 
-        name='like_post'
+        name='update_reaction'
     )
     def update_reaction(self, request, *args, **kwargs):
         return update_reaction(
