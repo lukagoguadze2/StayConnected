@@ -26,6 +26,7 @@ class PostView(mixins.ListModelMixin,
                mixins.DestroyModelMixin,
                mixins.UpdateModelMixin,
                GenericViewSet):
+    serializer_class = EmptySerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
