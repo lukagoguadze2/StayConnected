@@ -29,12 +29,27 @@ from drf_yasg.utils import swagger_auto_schema
 from .swagger_docs import (
     LoginDocs,
     LogOutDocs,
+    SignupDocs,
+    ProfileDocs,
+    ProfilePostsDocs,
+    ResetPasswordDocs,
+    ResetPasswordRequestDocs
 )
 
 
 class SignupView(CreateAPIView):
     serializer_class = SignupSerializer
+    doc_class = SignupDocs
 
+    @swagger_auto_schema(
+        request_body=doc_class.request_body,
+        responses=doc_class.responses,
+        operation_description=doc_class.operation_description,
+        operation_summary=doc_class.operation_summary
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+    
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         response.data = {
@@ -46,6 +61,15 @@ class SignupView(CreateAPIView):
 class ProfileView(RetrieveAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
+    doc_class = ProfileDocs
+    
+    @swagger_auto_schema(
+        responses=doc_class.responses,
+        operation_description=doc_class.operation_description,
+        operation_summary=doc_class.operation_summary
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     def get_object(self):
         return self.request.user
@@ -98,11 +122,17 @@ class LogOutView(TokenBlacklistView):
     
 
 class PersonalPostView(ListAPIView):
-    """
-    Returns personal posts details of the authenticated user.
-    """
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
+    doc_class = ProfilePostsDocs
+    
+    @swagger_auto_schema(
+        responses=doc_class.responses,
+        operation_description=doc_class.operation_description,
+        operation_summary=doc_class.operation_summary
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         return Post.objects.annotate_with_seen_by_user(
@@ -115,7 +145,14 @@ class PersonalPostView(ListAPIView):
 class ResetPasswordRequestView(GenericAPIView):
     serializer_class = ResetPasswordRequestSerializer
     http_method_names = ['post']
+    doc_class = ResetPasswordRequestDocs
     
+    @swagger_auto_schema(
+        request_body=doc_class.request_body,
+        responses=doc_class.responses,
+        operation_description=doc_class.operation_description,
+        operation_summary=doc_class.operation_summary
+    )
     def post(self, request):
         email = request.data.get('email')
         if not email:
@@ -146,9 +183,19 @@ class ResetPasswordRequestView(GenericAPIView):
 class ResetPasswordView(UpdateAPIView):
     serializer_class = ResetPasswordSerializer
     http_method_names = ['put']
+    doc_class = ResetPasswordDocs
     
     def get_object(self):
         return User.objects.filter(email=self.request.data.get('email')).first()
+    
+    @swagger_auto_schema(
+        request_body=doc_class.request_body,
+        responses=doc_class.responses,
+        operation_description=doc_class.operation_description,
+        operation_summary=doc_class.operation_summary
+    )
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
     
     def update(self, request, *args, **kwargs):
         if self.request.user.is_authenticated:
