@@ -26,7 +26,7 @@ def react_on_entity(self, request, *_, **kwargs):
         **{object_type: object_model}
     ).first()
 
-    if not reaction:
+    if reaction:
         prefix = '' if reaction.reaction_type else 'dis'
         return Response(
             {
