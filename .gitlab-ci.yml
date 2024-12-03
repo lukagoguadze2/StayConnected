@@ -52,7 +52,7 @@ test-job:
     - docker system prune -a -f --volumes
     - docker ps -a
     - docker images -a
-    - ssh -T ubuntu@$PYTHON_PRE_PRODUCTION "echo 'connecting to pre-production' && \
+    - ssh -T ubuntu@$PYTHON_PRE_PRODUCTION && \
         echo 'rebuilding pre production docker-compose.' && \
         docker system prune -a -f && \
         cd /home/ubuntu && \
@@ -62,7 +62,7 @@ test-job:
         docker system prune -a -f && \
         docker ps -a && \
         docker images -a"
-        
+
     - echo "=====Completed====="
   rules:
     - if: '$CI_COMMIT_BRANCH == "Test"'
