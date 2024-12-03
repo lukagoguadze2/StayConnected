@@ -1,0 +1,148 @@
+stages:
+  - test-job
+  - check-database
+  - production
+
+test-job:
+  stage: test-job
+  tags:
+    - Builder 
+  script:
+    - echo "Running tests on Test branch"
+    - echo "Checking mysql connection"
+    - export MYSQL_HOST=$MYSQL_HOST
+    - export MYSQL_PORT=$MYSQL_PORT
+    - export MYSQL_ROOT_USER=$MYSQL_ROOT_USER
+    - export MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+    - export DATABASES=$MYSQL_DB_NAME,$TEST_DB_NAME
+    - pwd
+    - ls
+    - python3 -m venv venv 
+    - source venv/bin/activate
+    - pip install mysql-connector-python
+    - result=$(python3 database/check-mysql.py)
+    - |
+      if [ "$result" == "true" ]; then
+        echo "===Database is Running==="
+      else
+        echo "===Database is not Running==="
+        exit 1
+      fi
+
+    - echo "===Getting Started with Python-Django Testing==="
+    - docker stop $(docker ps -q) 2> /dev/null || true
+    - docker system prune -a -f --volumes
+    - docker ps -a
+    - docker images -a
+    - docker build --build-arg MYSQL_HOST=$MYSQL_HOST --build-arg MYSQL_PORT=$MYSQL_PORT --build-arg MYSQL_ROOT_USER=$MYSQL_ROOT_USER --build-arg MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --build-arg MYSQL_DB_NAME=$TEST_DB_NAME --build-arg SECRET_KEY=$SECRET_KEY -t $Dockerhub/python-django:latest .
+    - echo "build completed"
+    - echo "starting docker container for testing"
+    - docker run -d --rm -p 8000:8000 --name python-django $Dockerhub/python-django:latest
+    - echo "docker container is running. starting health tests"
+    - pip install requests
+    - sleep 5
+    - python3 test/test.py
+    - echo "=======Health checks passed========"
+
+    - echo "pushing to python-django pre-production"
+    - docker login -u "$Dockerhub" -p "$DOCKER_PASSWORD"
+    - docker push $Dockerhub/python-django:latest
+    - scp -r ./docker-compose.yml ubuntu@$PYTHON_PRE_PRODUCTION:/home/ubuntu/
+    - docker stop $(docker ps -q) 2> /dev/null || true
+    - docker system prune -a -f --volumes
+    - docker ps -a
+    - docker images -a
+    - |
+      ssh -T ubuntu@$PYTHON_PRE_PRODUCTION \
+        "echo 'rebuilding pre production docker-compose.' && \
+        docker system prune -a -f && \
+        cd /home/ubuntu && \
+        docker-compose down && \
+        docker-compose pull && \
+        docker-compose up -d && \
+        docker system prune -a -f && \
+        docker ps -a && \
+        docker images -a"
+
+    - echo "=====Completed====="
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "Test"'
+
+
+check-database:
+  stage: check-database
+  tags:
+    - Builder 
+  script:
+      - echo "===Checking database connection==="
+      - export MYSQL_HOST=$MYSQL_HOST
+      - export MYSQL_PORT=$MYSQL_PORT
+      - export MYSQL_ROOT_USER=$MYSQL_ROOT_USER
+      - export MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+      - export DATABASES=$MYSQL_DB_NAME,$TEST_DB_NAME
+      - python3 -m venv venv 
+      - source venv/bin/activate
+      - pip install mysql-connector-python
+      - result=$(python3 database/check-mysql.py)
+      - |
+        if [ "$result" == "true" ]; then
+          echo "Database is running"
+        else
+          echo "===Mysql is not running==="
+          scp -r ./database ubuntu@$MYSQL_EC2_HOST:/home/ubuntu/
+          cd database/
+          docker stop $(docker ps -q) 2> /dev/null || true
+          docker system prune -a -f --volumes
+          docker build --build-arg MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -t $Dockerhub/mysql-database:latest .
+          docker login -u "$Dockerhub" -p "$DOCKER_PASSWORD"
+          docker push $Dockerhub/mysql-database:latest
+          echo "starting mysql again"
+          ssh -T ubuntu@$MYSQL_EC2_HOST "echo 'connecting to mysql ec2' && \
+            echo 'rebuilding docker-compose.' && \
+            cd database/ && \
+            docker system prune -a -f && \
+            docker-compose down && \
+            docker-compose pull && \
+            docker-compose up -d && \
+            docker system prune -a -f "
+        fi
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+
+
+production:
+  stage: production
+  tags:
+    - Builder
+  needs:
+    - job: check-database
+      artifacts: false 
+  script:
+    - echo "===Production==="
+
+    - echo "building docker image"
+    - docker stop $(docker ps -q) 2> /dev/null || true
+    - docker system prune -a -f --volumes
+    - docker build --build-arg MYSQL_HOST=$MYSQL_HOST --build-arg MYSQL_PORT=$MYSQL_PORT --build-arg MYSQL_ROOT_USER=$MYSQL_ROOT_USER --build-arg MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --build-arg MYSQL_DB_NAME=$MYSQL_DB_NAME --build-arg SECRET_KEY=$SECRET_KEY -t  $Dockerhub/python-django:latest .
+    - docker login -u "$Dockerhub" -p "$DOCKER_PASSWORD"
+    - echo "pushing docker image to dockerhub"
+    - docker push $Dockerhub/python-django:latest
+    - echo "image pushed to dockerhub"
+    - echo "copying compose file to production"
+    - scp -r ./docker-compose.yml ubuntu@$PYTHON_PRODUCTION:/home/ubuntu/
+    - ssh -T ubuntu@$PYTHON_PRODUCTION "echo 'connecting to production' && \
+        echo 'Rebuilding docker-compose.' && \
+        cd /home/ubuntu && \
+        docker system prune -a -f --volumes && \
+        docker-compose down && \
+        docker-compose pull && \
+        docker-compose up -d && \
+        docker system prune -a -f --volumes && \
+        docker ps -a"
+    - echo "checking localhost:80/health path"
+    - curl -f http://localhost:80/health || exit 1
+
+    - echo "==========COMPLETED=========="
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
