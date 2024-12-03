@@ -26,7 +26,7 @@ WORKDIR /app/core
 
 EXPOSE 8000
 
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+# CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
 
-# CMD ["sh", "-c", "python3 core/manage.py migrate && python3 core/manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"]
 
