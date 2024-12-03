@@ -26,7 +26,9 @@ class SignupSerializer(serializers.ModelSerializer):
         username = attrs.get('username')
         
         if contains_prohibited_words(username):
-            raise serializers.ValidationError('Username contains prohibited words')
+            raise serializers.ValidationError(
+                'Username contains prohibited words'
+            )
         
         password = attrs.get('password')
         password_2 = attrs.get('password_2')
