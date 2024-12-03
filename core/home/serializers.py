@@ -1,7 +1,9 @@
+import re
 from rest_framework import serializers
 
 from .models import Tag
 from authentication.models import User
+from .utils import contains_prohibited_words
 
 
 class CreateTagSerializer(serializers.ModelSerializer):
@@ -15,11 +17,13 @@ class CreateTagSerializer(serializers.ModelSerializer):
         if Tag.objects.filter(title=title).exists():
             raise serializers.ValidationError('Tag already exists')
         
-        for char in title:
-            if not char.isalpha():
-                raise serializers.ValidationError(
-                    'Title must contain only alphabets'
-                )
+        if not re.match(r'^[\w\+\-\#]+$', title):
+            raise serializers.ValidationError(
+                'Title can only contain letters, numbers, and symbols like +, -, #'
+            )
+        
+        if contains_prohibited_words(title):
+            raise serializers.ValidationError('Title contains prohibited words')
             
         return super().create(validated_data)
 

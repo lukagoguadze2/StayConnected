@@ -22,12 +22,20 @@ from home.reactions import (
     update_reaction
 )
 
+from drf_yasg.utils import swagger_auto_schema
+from .swagger_docs import CommentDocs
+
 
 class CommentView(DestroyModelMixin, GenericViewSet):
     queryset = Comment.objects.prefetch_related('author')
     serializer_class = CreateCommentSerializer
     permission_classes = [IsAuthenticated]
+    doc_class = CommentDocs
 
+    @swagger_auto_schema(
+        operation_description=doc_class.create_comment['operation_description'],
+        operation_summary=doc_class.create_comment['operation_summary']
+    )
     @action(
         detail=False, 
         methods=['post'], 
@@ -46,6 +54,10 @@ class CommentView(DestroyModelMixin, GenericViewSet):
             serializer.save()
             return Response(serializer.data)
     
+    @swagger_auto_schema(
+        operation_description=doc_class.mark_correct['operation_description'],
+        operation_summary=doc_class.mark_correct['operation_summary']
+    )
     @action(
         detail=True, 
         methods=['put'], 
@@ -77,6 +89,10 @@ class CommentView(DestroyModelMixin, GenericViewSet):
         
         return Response({'detail': 'Comment marked as correct'})
     
+    @swagger_auto_schema(
+        operation_description=doc_class.unmark_correct['operation_description'],
+        operation_summary=doc_class.unmark_correct['operation_summary']
+    )
     @action(
         detail=True, 
         methods=['put'], 
@@ -105,6 +121,10 @@ class CommentView(DestroyModelMixin, GenericViewSet):
         comment.save()
         return Response({'detail': 'Comment unmarked as correct'})
 
+    @swagger_auto_schema(
+        operation_description=doc_class.like_comment['operation_description'],
+        operation_summary=doc_class.like_comment['operation_summary']
+    )
     @action(
         detail=True, 
         methods=['post'], 
@@ -119,6 +139,10 @@ class CommentView(DestroyModelMixin, GenericViewSet):
             reaction_type=CommentReaction.LIKE
         )
 
+    @swagger_auto_schema(
+        operation_description=doc_class.dislike_comment['operation_description'],
+        operation_summary=doc_class.dislike_comment['operation_summary']
+    )
     @action(
         detail=True, 
         methods=['post'], 
@@ -133,6 +157,10 @@ class CommentView(DestroyModelMixin, GenericViewSet):
             reaction_type=CommentReaction.DISLIKE
         )
 
+    @swagger_auto_schema(
+        operation_description=doc_class.remove_reaction['operation_description'],
+        operation_summary=doc_class.remove_reaction['operation_summary']
+    )
     @action(
         detail=True, 
         methods=['delete'], 
@@ -145,7 +173,11 @@ class CommentView(DestroyModelMixin, GenericViewSet):
             model=CommentReaction,
             object='comment'
         )
-
+    
+    @swagger_auto_schema(
+        operation_description=doc_class.update_reaction['operation_description'],
+        operation_summary=doc_class.update_reaction['operation_summary']
+    )
     @action(
         detail=True, 
         methods=['put'], 
@@ -158,6 +190,14 @@ class CommentView(DestroyModelMixin, GenericViewSet):
             model=CommentReaction,
             object='comment'
         )
+        
+    
+    @swagger_auto_schema(
+        operation_description=doc_class.delete_comment['operation_description'],
+        operation_summary=doc_class.delete_comment['operation_summary']
+    )
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
 
 
 class CommentPagination(PageNumberPagination):
@@ -168,7 +208,15 @@ class PostCommentsView(ListAPIView):
     serializer_class = GetPostCommentsSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = CommentPagination
+    doc_class = CommentDocs
 
+    @swagger_auto_schema(
+        operation_description=doc_class.post_comments['operation_description'],
+        operation_summary=doc_class.post_comments['operation_summary']
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
         if not post_id or not Comment.objects.filter(post_id=post_id).exists():

@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .models import Comment
 from authentication.serializers import UserProfileSerializer
+from home.utils import contains_prohibited_words
 
 
 class CreateCommentSerializer(serializers.ModelSerializer):
@@ -9,6 +10,14 @@ class CreateCommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['post', 'content']
         read_only_fields = ['author']
+    
+    def validate(self, attrs):
+        content = attrs.get('content')
+        
+        if contains_prohibited_words(content):
+            raise serializers.ValidationError('Content contains prohibited words')
+        
+        return attrs
 
     def create(self, validated_data):
         post = validated_data.get('post')
