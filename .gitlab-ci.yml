@@ -40,6 +40,7 @@ test-job:
     - docker run -d --rm -p 8000:8000 --name python-django $Dockerhub/python-django:latest
     - echo "docker container is running. starting health tests"
     - pip install requests
+    - sleep 5
     - python3 test/test.py
     - echo "=======Health checks passed========"
     - docker stop $(docker ps -q) 2> /dev/null || true
