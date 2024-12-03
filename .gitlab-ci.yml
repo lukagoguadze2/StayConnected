@@ -43,15 +43,15 @@ test-job:
     - sleep 5
     - python3 test/test.py
     - echo "=======Health checks passed========"
-    - docker stop $(docker ps -q) 2> /dev/null || true
-    - docker system prune -a -f --volumes
-    - docker ps -a
-    - docker images -a
 
     - echo "pushing to python-django pre-production"
     - docker login -u "$Dockerhub" -p "$DOCKER_PASSWORD"
     - docker push $Dockerhub/python-django:latest
     - scp -r ./docker-compose.yml ubuntu@$PYTHON_PRE_PRODUCTION:/home/ubuntu/
+    - docker stop $(docker ps -q) 2> /dev/null || true
+    - docker system prune -a -f --volumes
+    - docker ps -a
+    - docker images -a
     - ssh -T ubuntu@$PYTHON_PRE_PRODUCTION << EOF
         echo "Connecting to pre-prod"
         docker system prune -a -f
