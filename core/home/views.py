@@ -113,14 +113,20 @@ class DatabaseHealthcheckAPIView(APIView):
         except DatabaseError:
             db_status = "unhealthy"
             status_code = 503
+        
+        if "sqlite" not in connection.settings_dict["ENGINE"]:
+            db_info = {
+                "status": db_status,
+                "status_code": status_code,
+                "database_engine": connection.settings_dict["ENGINE"],
+                "database_name": connection.settings_dict["NAME"],
+                "host": connection.settings_dict["HOST"],
+                "port": connection.settings_dict["PORT"],
+            }
 
-        db_info = {
-            "status": db_status,
-            "status_code": status_code,
-            "database_engine": connection.settings_dict["ENGINE"],
-            "database_name": connection.settings_dict["NAME"],
-            "host": connection.settings_dict["HOST"],
-            "port": connection.settings_dict["PORT"],
-        }
+            return Response(db_info, status=status_code)
 
-        return Response(db_info, status=status_code)
+        return Response(
+            {"detail": "Current database does not support health checks."},
+            status=503
+        )
