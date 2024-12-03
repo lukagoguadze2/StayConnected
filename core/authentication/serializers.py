@@ -2,6 +2,7 @@ from django.contrib.auth.hashers import check_password
 from rest_framework import serializers
 from .models import User
 
+from home.utils import contains_prohibited_words
 
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
@@ -22,6 +23,11 @@ class SignupSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, attrs):
+        username = attrs.get('username')
+        
+        if contains_prohibited_words(username):
+            raise serializers.ValidationError('Username contains prohibited words')
+        
         password = attrs.get('password')
         password_2 = attrs.get('password_2')
         if password != password_2:
