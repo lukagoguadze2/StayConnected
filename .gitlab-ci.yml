@@ -15,6 +15,8 @@ test-job:
     - export MYSQL_ROOT_USER=$MYSQL_ROOT_USER
     - export MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
     - export DATABASES=$MYSQL_DB_NAME,$TEST_DB_NAME
+    - pwd
+    - ls
     - python3 -m venv venv 
     - source venv/bin/activate
     - pip install mysql-connector-python
@@ -28,7 +30,7 @@ test-job:
       fi
 
     - echo "===Getting Started with Python-Django Testing==="
-    - docker stop $(docker ps -q) 2> /dev/null
+    - docker stop $(docker ps -q) 2> /dev/null || true
     - docker system prune -a -f --volumes
     - docker ps -a
     - docker images -a
@@ -40,7 +42,7 @@ test-job:
     - pip install requests
     - python3 test/test.py
     - echo "=======Health checks passed========"
-    - docker stop $(docker ps -q) 2> /dev/null
+    - docker stop $(docker ps -q) 2> /dev/null || true
     - docker system prune -a -f --volumes
     - docker ps -a
     - docker images -a
@@ -89,7 +91,7 @@ check-database:
           echo "===Mysql is not running==="
           scp -r ./database ubuntu@$MYSQL_EC2_HOST:/home/ubuntu/
           cd database/
-          docker stop $(docker ps -q) 2> /dev/null
+          docker stop $(docker ps -q) 2> /dev/null || true
           docker system prune -a -f --volumes
           docker build --build-arg MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -t $Dockerhub/mysql-database:latest .
           docker login -u "$Dockerhub" -p "$DOCKER_PASSWORD"
@@ -120,7 +122,7 @@ production:
     - echo "===Production==="
 
     - echo "building docker image"
-    - docker stop $(docker ps -q) 2> /dev/null
+    - docker stop $(docker ps -q) 2> /dev/null || true
     - docker system prune -a -f --volumes
     - docker build --build-arg MYSQL_HOST=$MYSQL_HOST --build-arg MYSQL_PORT=$MYSQL_PORT --build-arg MYSQL_ROOT_USER=$MYSQL_ROOT_USER --build-arg MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --build-arg MYSQL_DB_NAME=$MYSQL_DB_NAME --build-arg SECRET_KEY=$SECRET_KEY -t  $Dockerhub/python-django:latest .
     - docker login -u "$Dockerhub" -p "$DOCKER_PASSWORD"
