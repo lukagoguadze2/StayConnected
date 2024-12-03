@@ -3,6 +3,7 @@ from authentication.serializers import UserProfileSerializer
 
 from .models import Post
 from home.serializers import TagSerializer
+from home.utils import contains_prohibited_words
 
 
 class CreatePostSerializer(serializers.ModelSerializer):
@@ -11,6 +12,18 @@ class CreatePostSerializer(serializers.ModelSerializer):
         fields = ('author', 'title', 'description', 'tags')
         read_only_fields = ('author', )
 
+    def validate(self, attrs):
+        title = attrs.get('title')
+        description = attrs.get('description')
+
+        if contains_prohibited_words(title):
+            raise serializers.ValidationError('Title contains prohibited words')
+        
+        if contains_prohibited_words(description):
+            raise serializers.ValidationError('Description contains prohibited words')
+        
+        return attrs
+        
     def create(self, validated_data):
         tags = validated_data.pop('tags')
         post = Post.objects.create(**validated_data)
