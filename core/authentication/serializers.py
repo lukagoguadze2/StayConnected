@@ -1,4 +1,3 @@
-from django.contrib.auth.hashers import check_password
 from rest_framework import serializers
 from .models import User
 
@@ -85,11 +84,34 @@ class ResetPasswordSerializer(SignupSerializer):
         
     def validate(self, attrs):
         password = attrs.get('password')
-        
-        user = User.objects.filter(email=attrs.get('email')).first()
-        if user and check_password(password, user.password): 
+        password_2 = attrs.get('password_2')
+        email = attrs.get('email')
+
+        if password != password_2:
             raise serializers.ValidationError(
-                "New password must be different from the current password."
+                'Passwords do not match'
             )
-        
-        return super().validate(attrs)
+        if password and len(password) < 8:
+            raise serializers.ValidationError(
+                'Password must be at least 8 characters long'
+            )
+        if password and not any(char.isdigit() for char in password):
+            raise serializers.ValidationError(
+                'Password must contain a digit'
+            )
+        if password and not any(char.isalpha() for char in password):
+            raise serializers.ValidationError(
+                'Password must contain a letter'
+            )
+        if password and not any(char.isupper() for char in password):
+            raise serializers.ValidationError(
+                'Password must contain an uppercase letter'
+            )
+
+        user = User.objects.filter(email=email).first()
+        if user and user.check_password(password):
+            raise serializers.ValidationError(
+                'New password must be different from the current password.'
+            )
+
+        return attrs
