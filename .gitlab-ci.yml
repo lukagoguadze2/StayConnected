@@ -52,7 +52,8 @@ test-job:
     - docker system prune -a -f --volumes
     - docker ps -a
     - docker images -a
-    - ssh -T ubuntu@$PYTHON_PRE_PRODUCTION \
+    - |
+      ssh -T ubuntu@$PYTHON_PRE_PRODUCTION \
         "echo 'rebuilding pre production docker-compose.' && \
         docker system prune -a -f && \
         cd /home/ubuntu && \
