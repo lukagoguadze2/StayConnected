@@ -151,6 +151,11 @@ class ResetPasswordView(UpdateAPIView):
         return User.objects.filter(email=self.request.data.get('email')).first()
     
     def update(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated:
+            return Response(
+                {'detail': 'You are already logged in'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data)
         if serializer.is_valid():

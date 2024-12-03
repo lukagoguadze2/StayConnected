@@ -1,6 +1,6 @@
 from django.contrib.auth.hashers import check_password
 from rest_framework import serializers
-from authentication.models import User
+from .models import User
 
 
 class SignupSerializer(serializers.ModelSerializer):
