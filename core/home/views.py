@@ -55,7 +55,9 @@ class PostsFilterView(ListAPIView):
     filterset_class = PostFilter  
 
     def get_queryset(self):
-        return Post.objects.all()
+        return Post.objects.annotate_with_seen_by_user(
+            user=self.request.user
+        )
     
 
 class HealthcheckAPIView(APIView):
