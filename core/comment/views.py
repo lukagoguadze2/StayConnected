@@ -209,6 +209,7 @@ class PostCommentsView(ListAPIView):
     permission_classes = [IsAuthenticated]
     pagination_class = CommentPagination
     doc_class = CommentDocs
+    filter_backends = []
 
     @swagger_auto_schema(
         operation_description=doc_class.post_comments['operation_description'],
@@ -220,7 +221,7 @@ class PostCommentsView(ListAPIView):
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
         if not post_id or not Comment.objects.filter(post_id=post_id).exists():
-            raise NotFound("Post with the given ID does not exist.")
+            raise NotFound("Post with the given ID does not exist, or it has no comments.")
         
         return (
             Comment.objects

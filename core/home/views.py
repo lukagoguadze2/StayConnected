@@ -23,6 +23,8 @@ from authentication.models import User
 from post.serializers import PostSerializer
 from .serializers import LeaderBoardSerializer
 
+from .utils import django_filter_warning
+
 
 class CreateTagView(CreateAPIView):
     serializer_class = CreateTagSerializer
@@ -47,18 +49,17 @@ class LeaderboardView(ListAPIView):
             )
         )
 
-
 class PostsFilterView(ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]  
-    filterset_class = PostFilter  
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PostFilter
 
+    @django_filter_warning
     def get_queryset(self):
-        return Post.objects.annotate_with_seen_by_user(
-            user=self.request.user
-        )
-    
+        user = self.request.user
+        return Post.objects.annotate_with_seen_by_user(user=user)
+
 
 class HealthcheckAPIView(APIView):
     """
