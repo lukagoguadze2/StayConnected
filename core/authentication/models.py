@@ -57,7 +57,7 @@ class User(AbstractUser):
 
         super().save(*args, **kwargs)
 
-    def update_rating(self, rating):
+    def update_rating(self, rating: int):
         self.rating += rating
         self.save()
 

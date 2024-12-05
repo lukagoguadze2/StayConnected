@@ -52,7 +52,7 @@ class UserActivityMiddleware:
 
         if request.user.is_authenticated:
             current_time = now()
-            last_activity = request.user.last_activity
+            last_activity = request.user.last_activity or now()
             inactive_days = (current_time - last_activity).days
             if inactive_days > 1:
                 request.user.update_rating(

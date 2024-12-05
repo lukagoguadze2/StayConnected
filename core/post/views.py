@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from drf_yasg.utils import swagger_auto_schema
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -6,41 +7,38 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import mixins, GenericViewSet
 
+from home.serializer_utils import SerializerFactory
 from .models import Post, PostReaction, PostSeen
 from .serializers import (
     PostSerializer,
-    LikePostSerializer,
     CreatePostSerializer
 )
 
-from home.serializers import EmptySerializer
-from home.reactions import (
-    react_on_entity, 
-    remove_reaction, 
-    update_reaction
-)
+from home.reactions import ReactionModelMixin
 
 
 class PostView(mixins.ListModelMixin,
                mixins.RetrieveModelMixin,
                mixins.DestroyModelMixin,
                mixins.UpdateModelMixin,
+               ReactionModelMixin,
                GenericViewSet):
-    serializer_class = EmptySerializer
     permission_classes = [IsAuthenticated]
+    serializer_class = SerializerFactory(
+        PostSerializer,
+        create=CreatePostSerializer,
+    )
+
+    # ReactionModelMixin
+    reaction_model = PostReaction
+    object_type = 'post'
+    like_post_url_name = 'like_post'
+    dislike_post_url_name = 'dislike_post'
 
     def get_queryset(self):
         return Post.objects.annotate_with_seen_by_user(
             user=self.request.user
         ) if self.request.user.is_authenticated else None
-
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return PostSerializer
-        if self.request.method == "POST":
-            return CreatePostSerializer
-
-        return super().get_serializer_class()
 
     def retrieve(self, request, *args, **kwargs):
         PostSeen.objects.get_or_create(
@@ -58,8 +56,7 @@ class PostView(mixins.ListModelMixin,
     @action(
         detail=False, 
         methods=['post'], 
-        serializer_class=CreatePostSerializer, 
-        name='create_post', 
+        name='create',
         url_path='create'
     )
     def create_post(self, request, *args, **kwargs):
@@ -68,61 +65,3 @@ class PostView(mixins.ListModelMixin,
             serializer.save(author=request.user)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @action(
-        detail=True, 
-        methods=['post'], 
-        serializer_class=EmptySerializer, 
-        name='like_post'
-    )
-    def like_post(self, request, *args, **kwargs):
-        return react_on_entity(
-            self,
-            request, *args, **kwargs,
-            model=PostReaction,
-            object='post',
-            reaction_type=PostReaction.LIKE
-        )
-
-    @action(
-        detail=True, 
-        methods=['post'], 
-        serializer_class=EmptySerializer, 
-        name='dislike_post'
-    )
-    def dislike_post(self, request, *args, **kwargs):
-        return react_on_entity(
-            self,
-            request, *args, **kwargs,
-            model=PostReaction,
-            object='post',
-            reaction_type=PostReaction.DISLIKE
-        )
-
-    @action(
-        detail=True, 
-        methods=['delete'],
-        serializer_class=EmptySerializer,
-        name='remove_reaction'
-    )
-    def remove_reaction(self, request, *args, **kwargs):
-        return remove_reaction(
-            self,
-            request, *args, **kwargs,
-            model=PostReaction,
-            object='post'
-        )
-
-    @action(
-        detail=True, 
-        methods=['put'], 
-        serializer_class=LikePostSerializer, 
-        name='update_reaction'
-    )
-    def update_reaction(self, request, *args, **kwargs):
-        return update_reaction(
-            self,
-            request, *args, **kwargs,
-            model=PostReaction,
-            object='post'
-        )

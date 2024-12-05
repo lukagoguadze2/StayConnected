@@ -1,11 +1,15 @@
 from typing import Literal
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from home.serializer_utils import SerializerFactory
+from home.serializers import EmptySerializer
 from post.models import PostReaction, Post
 from comment.models import CommentReaction, Comment
 
 from home import ratings
+from post.serializers import LikePostSerializer
 
 
 def react_on_entity(self, request, *_, **kwargs):
@@ -16,10 +20,12 @@ def react_on_entity(self, request, *_, **kwargs):
         object (str): Object type (post/comment)
         reaction_type: Reaction type (true/false)
     """
+    assert getattr(self, 'get_object'), 'get_object method not found.'
+
     reaction_model: PostReaction | CommentReaction = kwargs.pop("model")
     object_type: Literal['post', 'comment'] = kwargs.pop("object")
     reaction_type: bool = kwargs.pop('reaction_type')
-    object_model: Post | Comment = self.get_object()
+    object_model: Post | Comment = getattr(self, 'get_object')
 
     reaction = reaction_model.objects.filter(
         user=request.user,
@@ -72,9 +78,12 @@ def remove_reaction(self, request, *_, **kwargs):
         model: Reaction model
         object (str): Object type (post/comment)
     """
+    assert getattr(self, 'get_object'), 'get_object method not found.'
+
     reaction_model: PostReaction | CommentReaction = kwargs.pop("model")
     object_type: Literal['post', 'comment'] = kwargs.pop("object")
-    object_model: Post | Comment = self.get_object()
+    object_model: Post | Comment = getattr(self, 'get_object')
+
     try:
         reaction = reaction_model.objects.get(
             user=request.user,
@@ -129,10 +138,13 @@ def update_reaction(self, request, *_, **kwargs):
         model: Reaction model
         object (str): Object type (post/comment)
     """
+    assert getattr(self, 'get_object'), 'get_object method not found.'
+    assert getattr(self, 'get_serializer'), 'get_serializer method not found.'
+
     reaction_model: PostReaction | CommentReaction = kwargs.pop("model")
     object_type: Literal['post', 'comment'] = kwargs.pop("object")
-    object_model: Post | Comment = self.get_object()
-    serializer = self.get_serializer(data=request.data)
+    object_model: Post | Comment = getattr(self, 'get_object')
+    serializer = getattr(self, 'get_serializer')(data=request.data)
 
     if serializer.is_valid(raise_exception=True):
         try:
@@ -192,3 +204,87 @@ def update_reaction(self, request, *_, **kwargs):
         reaction.save()
 
         return Response(status=status.HTTP_200_OK, data={'detail': 'success'})
+
+
+class ReactionModelMixin:
+    __serializer_per_action = dict(
+        like=EmptySerializer,
+        dislike=EmptySerializer,
+        update_reaction=LikePostSerializer
+    )
+
+    reaction_model = None
+    serializer_class = None
+    object_type: Literal['post', 'comment'] = None
+
+    def get_serializer_class(self):
+        if self.serializer_class is None:
+            return SerializerFactory(
+                EmptySerializer,
+                **self.__serializer_per_action
+            ).serializer_getter
+
+        elif isinstance(self.serializer_class, SerializerFactory):
+            return SerializerFactory(
+                self.serializer_class.serializer_getter.default,
+                **{
+                    **self.serializer_class.serializer_getter.serializer_per_action,
+                    **self.__serializer_per_action
+                }
+            ).serializer_getter
+
+        return self.serializer_class
+
+    @action(
+        detail=True,
+        methods=['post'],
+        name='like'
+    )
+    def like(self, request, *args, **kwargs):
+        return react_on_entity(
+            self,
+            request, *args, **kwargs,
+            model=self.reaction_model,
+            object=self.object_type,
+            reaction_type=self.reaction_model.LIKE
+        )
+
+    @action(
+        detail=True,
+        methods=['post'],
+        name='dislike'
+    )
+    def dislike(self, request, *args, **kwargs):
+        return react_on_entity(
+            self,
+            request, *args, **kwargs,
+            model=self.reaction_model,
+            object=self.object_type,
+            reaction_type=self.reaction_model.DISLIKE
+        )
+
+    @action(
+        detail=True,
+        methods=['delete'],
+        name='remove_reaction'
+    )
+    def remove_reaction(self, request, *args, **kwargs):
+        return remove_reaction(
+            self,
+            request, *args, **kwargs,
+            model=self.reaction_model,
+            object=self.object_type
+        )
+
+    @action(
+        detail=True,
+        methods=['put'],
+        name='update_reaction'
+    )
+    def update_reaction(self, request, *args, **kwargs):
+        return update_reaction(
+            self,
+            request, *args, **kwargs,
+            model=self.reaction_model,
+            object=self.object_type
+        )

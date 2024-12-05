@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework.generics import (
     ListAPIView,
     CreateAPIView,
@@ -98,7 +99,9 @@ class LoginView(TokenObtainPairView):
         if email:
             try:
                 user = User.objects.get(email=email)
-                user.update_rating(ratings.USER_LOGGED_IN)
+                if timezone.now().date() != user.last_activity.date():  # check if user logged in today
+                    user.last_activity = timezone.now()
+                    user.update_rating(ratings.USER_LOGGED_IN)
             except User.DoesNotExist:
                 pass
         return super().post(request, *args, **kwargs)
