@@ -1,3 +1,4 @@
+from django.template.defaultfilters import title
 from drf_yasg import openapi
 
 JWT_FORMAT = "JWT"
@@ -492,4 +493,22 @@ class ProfilePostsDocs:
     """
 
     operation_summary = "Get the user's posts"
-    
+
+
+class TokenRefreshDocs:
+    operation_description = 'Use refresh token to get a new access token when the current one expires.'
+    operation_summary = 'Refresh token'
+    responses = {
+        200: openapi.Response(
+            description="Token refreshed successfully",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                example={'access': 'eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...'},
+                title='Access Token',
+                properties={
+                    'access': openapi.Schema(type=openapi.TYPE_STRING),
+                }
+            )
+        ),
+        400: "Invalid token"
+    }

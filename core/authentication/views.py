@@ -1,4 +1,7 @@
+from tkinter.scrolledtext import example
+
 from django.utils import timezone
+from drf_yasg import openapi
 from rest_framework.generics import (
     ListAPIView,
     CreateAPIView,
@@ -7,7 +10,7 @@ from rest_framework.generics import (
     RetrieveAPIView
 )
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenBlacklistView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenBlacklistView, TokenRefreshView
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -34,7 +37,7 @@ from .swagger_docs import (
     ProfileDocs,
     ProfilePostsDocs,
     ResetPasswordDocs,
-    ResetPasswordRequestDocs
+    ResetPasswordRequestDocs, TokenRefreshDocs
 )
 
 
@@ -216,4 +219,15 @@ class ResetPasswordView(UpdateAPIView):
                 status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
+class RefreshToken(TokenRefreshView):
+
+    @swagger_auto_schema(
+        operation_description=TokenRefreshDocs.operation_description,
+        operation_summary=TokenRefreshDocs.operation_summary,
+        responses=TokenRefreshDocs.responses,
+        title='Refresh Token'
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)

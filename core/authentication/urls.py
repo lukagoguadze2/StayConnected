@@ -7,10 +7,8 @@ from authentication.views import (
     ProfileView,
     PersonalPostView,
     ResetPasswordView,
+    RefreshToken,
     ResetPasswordRequestView
-)
-from rest_framework_simplejwt.views import (
-    TokenRefreshView,
 )
 
 app_name = 'auth'
@@ -29,5 +27,5 @@ urlpatterns = [
     
     path('profile/', ProfileView.as_view(), name='profile'),
     path('profile/posts/', PersonalPostView.as_view(), name='profile-posts'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('token/refresh/', RefreshToken.as_view(), name='token_refresh'),
 ]
