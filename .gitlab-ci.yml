@@ -40,29 +40,29 @@ test-job:
     - docker run -d --rm -p 8000:8000 --name python-django $Dockerhub/python-django:latest
     - echo "docker container is running. starting health tests"
     - pip install requests
+    - sleep 5
     - python3 test/test.py
     - echo "=======Health checks passed========"
-    - docker stop $(docker ps -q) 2> /dev/null || true
-    - docker system prune -a -f --volumes
-    - docker ps -a
-    - docker images -a
 
     - echo "pushing to python-django pre-production"
     - docker login -u "$Dockerhub" -p "$DOCKER_PASSWORD"
     - docker push $Dockerhub/python-django:latest
     - scp -r ./docker-compose.yml ubuntu@$PYTHON_PRE_PRODUCTION:/home/ubuntu/
-    - ssh -T ubuntu@$PYTHON_PRE_PRODUCTION << EOF
-        echo "Connecting to pre-prod"
-        docker system prune -a -f
-        echo "Rebuilding docker-compose."
-        cd /home/ubuntu
-        docker-compose down
-        docker-compose pull
-        docker-compose up -d
-        docker system prune -a -f
-        docker ps -a
-        docker images -a
-      EOF
+    - docker stop $(docker ps -q) 2> /dev/null || true
+    - docker system prune -a -f --volumes
+    - docker ps -a
+    - docker images -a
+    - |
+      ssh -T ubuntu@$PYTHON_PRE_PRODUCTION \
+        "echo 'rebuilding pre production docker-compose.' && \
+        docker system prune -a -f && \
+        cd /home/ubuntu && \
+        docker-compose down && \
+        docker-compose pull && \
+        docker-compose up -d && \
+        docker system prune -a -f && \
+        docker ps -a && \
+        docker images -a"
 
     - echo "=====Completed====="
   rules:
