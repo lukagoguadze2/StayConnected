@@ -9,7 +9,7 @@ from .utils import contains_prohibited_words
 class CreateTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ['title']
+        fields = ['id', 'title']
     
     def create(self, validated_data):
         title = validated_data.get('title')

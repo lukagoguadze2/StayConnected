@@ -1,13 +1,11 @@
-from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from .views import PostView
 
-app_name = 'post'
 
 router = DefaultRouter()
-router.register('', PostView, basename='posts')
+router.register(r'', PostView, basename='post')
 
-urlpatterns = [
-    path('', include(router.urls)),
-]
+app_name = 'post'
+
+urlpatterns = router.urls

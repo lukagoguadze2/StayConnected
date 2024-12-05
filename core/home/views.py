@@ -5,6 +5,7 @@ import django
 from django.db.models import Window, OrderBy, F
 from django.db.models.functions import RowNumber
 from django.db import connection, DatabaseError
+from drf_yasg.utils import swagger_auto_schema
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,27 +18,53 @@ from .serializers import (
     CreateTagSerializer
 )
 from .models import Tag
-from post.models import Post
 from .filters import PostFilter
-from authentication.models import User
-from post.serializers import PostSerializer
 from .serializers import LeaderBoardSerializer
+from post.models import Post
+from post.swagger_docs import PostDocs
+from post.serializers import PostSerializer
+from authentication.models import User
+
+from .utils import django_filter_warning
+
+from drf_yasg.utils import swagger_auto_schema
+
+from .swagger_docs import TagDocs, LeaderBoardDocs
 
 
 class CreateTagView(CreateAPIView):
     serializer_class = CreateTagSerializer
     permission_classes = [IsAuthenticated]
+    doc_class = TagDocs
+
+    @swagger_auto_schema(
+        request_body=doc_class.create_tag['request_body'],
+        responses=doc_class.create_tag['responses'],
+        operation_description=doc_class.create_tag['operation_description'],
+        operation_summary=doc_class.create_tag['operation_summary']
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
 
 class GetTagsView(ListAPIView):
     serializer_class = TagSerializer
     permission_classes = [IsAuthenticated]
     queryset = Tag.objects.all()
+    doc_class = TagDocs
+
+    @swagger_auto_schema(
+        operation_description=doc_class.get_tags['operation_description'],
+        operation_summary=doc_class.get_tags['operation_summary']
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 class LeaderboardView(ListAPIView):
     serializer_class = LeaderBoardSerializer
     permission_classes = [IsAuthenticated]
+    doc_class = LeaderBoardDocs
 
     def get_queryset(self):
         return User.objects.annotate(
@@ -47,18 +74,36 @@ class LeaderboardView(ListAPIView):
             )
         )
 
+    @swagger_auto_schema(
+        operation_description=doc_class.operation_description,
+        operation_summary=doc_class.operation_summary,
+        responses=doc_class.responses
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
 
 class PostsFilterView(ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]  
-    filterset_class = PostFilter  
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PostFilter
 
+    doc_class = PostDocs
+
+    @django_filter_warning
     def get_queryset(self):
         return Post.objects.annotate_with_seen_by_user(
             user=self.request.user
         )
-    
+
+    @swagger_auto_schema(
+        operation_description=doc_class.filter_post['operation_description'],
+        operation_summary=doc_class.filter_post['operation_summary'],
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
 
 class HealthcheckAPIView(APIView):
     """

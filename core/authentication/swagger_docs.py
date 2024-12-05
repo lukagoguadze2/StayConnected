@@ -2,6 +2,7 @@ from drf_yasg import openapi
 
 JWT_FORMAT = "JWT"
 
+
 class LoginDocs:
     request_body = openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -277,7 +278,6 @@ class SignupDocs:
     operation_summary = "Register a new user account"
     
 
-                
 class ProfileDocs:
     responses = {
         200: openapi.Schema(
@@ -325,7 +325,136 @@ class ProfileDocs:
     operation_summary = "Get the user's profile information"
     
     
-class ProfilePostsDocs:    
+class ProfilePostsDocs:
+    post_schema = openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'id': openapi.Schema(
+                title='id',
+                type=openapi.TYPE_NUMBER,
+                description="Post's ID",
+                example=5
+            ),
+            'author': openapi.Schema(
+                title='author',
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'id': openapi.Schema(
+                        title='id',
+                        type=openapi.TYPE_NUMBER,
+                        description="User's ID",
+                        example=1
+                    ),
+                    'username': openapi.Schema(
+                        title='username',
+                        type=openapi.TYPE_STRING,
+                        description="User's username",
+                        example='gela'
+                    ),
+                    'email': openapi.Schema(
+                        title='email',
+                        type=openapi.TYPE_STRING,
+                        format=openapi.FORMAT_EMAIL,
+                        description="User's email address",
+                        example='user@example.com'
+                    ),
+                    'rating': openapi.Schema(
+                        title='rating',
+                        type=openapi.TYPE_NUMBER,
+                        description="User's rating",
+                        example=68
+                    ),
+                    'answered_questions': openapi.Schema(
+                        title='answered_questions',
+                        type=openapi.TYPE_NUMBER,
+                        description="Number of answered questions (correct answers)",
+                        example=0
+                    )
+                }
+            ),
+            'title': openapi.Schema(
+                title='title',
+                type=openapi.TYPE_STRING,
+                description="Post's title",
+                example='C#'
+            ),
+            'description': openapi.Schema(
+                title='description',
+                type=openapi.TYPE_STRING,
+                description="Post's description",
+                example='How can we declare variables in C#?'
+            ),
+            'created_at': openapi.Schema(
+                title='created_at',
+                type=openapi.TYPE_NUMBER,
+                description="Timestamp of post creation",
+                example=1733229510
+            ),
+            'tags': openapi.Schema(
+                title='tags',
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'id': openapi.Schema(
+                            title='id',
+                            type=openapi.TYPE_NUMBER,
+                            description="Tag's ID",
+                            example=2
+                        ),
+                        'title': openapi.Schema(
+                            title='title',
+                            type=openapi.TYPE_STRING,
+                            description="Tag's title",
+                            example='C#'
+                        )
+                    }
+                )
+            ),
+            'engagement': openapi.Schema(
+                title='engagement',
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'likes': openapi.Schema(
+                        title='likes',
+                        type=openapi.TYPE_NUMBER,
+                        description="Number of likes",
+                        example=0
+                    ),
+                    'dislikes': openapi.Schema(
+                        title='dislikes',
+                        type=openapi.TYPE_NUMBER,
+                        description="Number of dislikes",
+                        example=0
+                    ),
+                    'comments': openapi.Schema(
+                        title='comments',
+                        type=openapi.TYPE_NUMBER,
+                        description="Number of comments",
+                        example=0
+                    )
+                }
+            ),
+            'is_owner': openapi.Schema(
+                title='is_owner',
+                type=openapi.TYPE_BOOLEAN,
+                description="Is the user the author of the post",
+                example=True
+            ),
+            'has_correct_answer': openapi.Schema(
+                title='has_correct_answer',
+                type=openapi.TYPE_BOOLEAN,
+                description="Does the post have a correct answer",
+                example=False
+            ),
+            'seen_by_user': openapi.Schema(
+                title='seen_by_user',
+                type=openapi.TYPE_BOOLEAN,
+                description="Is the post seen by the user",
+                example=False
+            )
+        }
+    )
     responses = {
         200: openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -351,143 +480,16 @@ class ProfilePostsDocs:
                 'results': openapi.Schema(
                     title='results',
                     type=openapi.TYPE_ARRAY,
-                    items=openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        properties={
-                            'id': openapi.Schema(
-                                title='id',
-                                type=openapi.TYPE_NUMBER,
-                                description="Post's ID",
-                                example=5
-                            ),
-                            'author': openapi.Schema(
-                                title='author',
-                                type=openapi.TYPE_OBJECT,
-                                properties={
-                                    'id': openapi.Schema(
-                                        title='id',
-                                        type=openapi.TYPE_NUMBER,
-                                        description="User's ID",
-                                        example=1
-                                    ),
-                                    'username': openapi.Schema(
-                                        title='username',
-                                        type=openapi.TYPE_STRING,
-                                        description="User's username",
-                                        example='gela'
-                                    ),
-                                    'email': openapi.Schema(
-                                        title='email',
-                                        type=openapi.TYPE_STRING,
-                                        format=openapi.FORMAT_EMAIL,
-                                        description="User's email address",
-                                        example='user@example.com'
-                                    ),
-                                    'rating': openapi.Schema(
-                                        title='rating',
-                                        type=openapi.TYPE_NUMBER,
-                                        description="User's rating",
-                                        example=68
-                                    ),
-                                    'answered_questions': openapi.Schema(
-                                        title='answered_questions',
-                                        type=openapi.TYPE_NUMBER,
-                                        description="Number of answered questions (correct answers)",
-                                        example=0
-                                    )
-                                }
-                            ),
-                            'title': openapi.Schema(
-                                title='title',
-                                type=openapi.TYPE_STRING,
-                                description="Post's title",
-                                example='C#'
-                            ),
-                            'description': openapi.Schema(
-                                title='description',
-                                type=openapi.TYPE_STRING,
-                                description="Post's description",
-                                example='How can we declare variables in C#?'
-                            ),
-                            'created_at': openapi.Schema(
-                                title='created_at',
-                                type=openapi.TYPE_NUMBER,
-                                description="Timestamp of post creation",
-                                example=1733229510
-                            ),
-                            'tags': openapi.Schema(
-                                title='tags',
-                                type=openapi.TYPE_ARRAY,
-                                items=openapi.Schema(
-                                    type=openapi.TYPE_OBJECT,
-                                    properties={
-                                        'id': openapi.Schema(
-                                            title='id',
-                                            type=openapi.TYPE_NUMBER,
-                                            description="Tag's ID",
-                                            example=2
-                                        ),
-                                        'title': openapi.Schema(
-                                            title='title',
-                                            type=openapi.TYPE_STRING,
-                                            description="Tag's title",
-                                            example='C#'
-                                        )
-                                    }
-                                )
-                            ),
-                            'engagement': openapi.Schema(
-                                title='engagement',
-                                type=openapi.TYPE_OBJECT,
-                                properties={
-                                    'likes': openapi.Schema(
-                                        title='likes',
-                                        type=openapi.TYPE_NUMBER,
-                                        description="Number of likes",
-                                        example=0
-                                    ),
-                                    'dislikes': openapi.Schema(
-                                        title='dislikes',
-                                        type=openapi.TYPE_NUMBER,
-                                        description="Number of dislikes",
-                                        example=0
-                                    ),
-                                    'comments': openapi.Schema(
-                                        title='comments',
-                                        type=openapi.TYPE_NUMBER,
-                                        description="Number of comments",
-                                        example=0
-                                    )
-                                }
-                            ),
-                            'is_owner': openapi.Schema(
-                                title='is_owner',
-                                type=openapi.TYPE_BOOLEAN,
-                                description="Is the user the author of the post",
-                                example=True
-                            ),
-                            'has_correct_answer': openapi.Schema(
-                                title='has_correct_answer',
-                                type=openapi.TYPE_BOOLEAN,
-                                description="Does the post have a correct answer",
-                                example=False
-                            ),
-                            'seen_by_user': openapi.Schema(
-                                title='seen_by_user',
-                                type=openapi.TYPE_BOOLEAN,
-                                description="Is the post seen by the user",
-                                example=False
-                            )
-                        }
-                    )
+                    items=post_schema
                 )
             }
         )
     }
 
     operation_description = """
-    Takes a user's ID and returns the user's posts. Use this endpoint to get the user's posts.
+    Takes a user's token from the request header and return a list of posts created by the user. 
+    Use this endpoint to get the user's posts.
     """
-    
-    operation_summary = "Get the user's posts"                     
+
+    operation_summary = "Get the user's posts"
     

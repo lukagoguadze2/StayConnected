@@ -128,6 +128,7 @@ class PersonalPostView(ListAPIView):
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
     doc_class = ProfilePostsDocs
+    filter_backends = []  # Add this line to fix the schema generation warning
     
     @swagger_auto_schema(
         responses=doc_class.responses,
@@ -136,7 +137,7 @@ class PersonalPostView(ListAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
-
+    
     def get_queryset(self):
         return Post.objects.annotate_with_seen_by_user(
             user=self.request.user

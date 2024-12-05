@@ -66,7 +66,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'rating', 'answered_questions', 'last_activity')
+        fields = ('id', 'username', 'email', 'rating', 'answered_questions')
         
     def get_answered_questions(self, obj):
         return self.context.get('answered_questions', 0)

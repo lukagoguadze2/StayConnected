@@ -1,6 +1,7 @@
 from typing import Literal
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from home.serializer_utils import SerializerFactory
@@ -9,7 +10,11 @@ from post.models import PostReaction, Post
 from comment.models import CommentReaction, Comment
 
 from home import ratings
+from post.permissions import HasObjectPermission
 from post.serializers import LikePostSerializer
+
+from drf_yasg.utils import swagger_auto_schema
+from comment.swagger_docs import CommentDocs
 
 
 def react_on_entity(self, request, *_, **kwargs):
@@ -213,9 +218,11 @@ class ReactionModelMixin:
         update_reaction=LikePostSerializer
     )
 
-    reaction_model = None
     serializer_class = None
+    reaction_model: PostReaction | CommentReaction = None
     object_type: Literal['post', 'comment'] = None
+
+    doc_class = CommentDocs
 
     def get_serializer_class(self):
         if self.serializer_class is None:
@@ -235,6 +242,10 @@ class ReactionModelMixin:
 
         return self.serializer_class
 
+    @swagger_auto_schema(
+        operation_description=doc_class.like['operation_description'],
+        operation_summary=doc_class.like['operation_summary']
+    )
     @action(
         detail=True,
         methods=['post'],
@@ -249,6 +260,10 @@ class ReactionModelMixin:
             reaction_type=self.reaction_model.LIKE
         )
 
+    @swagger_auto_schema(
+        operation_description=doc_class.dislike['operation_description'],
+        operation_summary=doc_class.dislike['operation_summary']
+    )
     @action(
         detail=True,
         methods=['post'],
@@ -263,10 +278,19 @@ class ReactionModelMixin:
             reaction_type=self.reaction_model.DISLIKE
         )
 
+    @swagger_auto_schema(
+        operation_description=doc_class.remove_reaction['operation_description'],
+        operation_summary=doc_class.remove_reaction['operation_summary']
+    )
     @action(
         detail=True,
         methods=['delete'],
-        name='remove_reaction'
+        name='remove_reaction',
+        permission_classes=[
+            IsAuthenticated,
+            HasObjectPermission,
+        ],
+
     )
     def remove_reaction(self, request, *args, **kwargs):
         return remove_reaction(
@@ -276,10 +300,18 @@ class ReactionModelMixin:
             object=self.object_type
         )
 
+    @swagger_auto_schema(
+        operation_description=doc_class.update_reaction['operation_description'],
+        operation_summary=doc_class.update_reaction['operation_summary']
+    )
     @action(
         detail=True,
         methods=['put'],
-        name='update_reaction'
+        name='update_reaction',
+        permission_classes=[
+            IsAuthenticated,
+            HasObjectPermission,
+        ],
     )
     def update_reaction(self, request, *args, **kwargs):
         return update_reaction(
