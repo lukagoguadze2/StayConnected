@@ -131,7 +131,8 @@ production:
     - echo "image pushed to dockerhub"
     - echo "copying compose file to production"
     - scp -r ./docker-compose.yml ubuntu@$PYTHON_PRODUCTION:/home/ubuntu/
-    - ssh -T ubuntu@$PYTHON_PRODUCTION "echo 'connecting to production' && \
+    - |
+      ssh -T ubuntu@$PYTHON_PRODUCTION "echo 'connecting to production' && \
         echo 'Rebuilding docker-compose.' && \
         cd /home/ubuntu && \
         docker system prune -a -f --volumes && \
@@ -139,10 +140,10 @@ production:
         docker-compose pull && \
         docker-compose up -d && \
         docker system prune -a -f --volumes && \
-        docker ps -a"
-    - echo "checking localhost:80/health path"
-    - curl -f http://localhost:80/health || exit 1
-
+        docker ps -a && \
+        sleep 5 && \
+        echo 'checking localhost:8000/health path' && \
+        curl -f http://localhost:8000/health || exit 1"
     - echo "==========COMPLETED=========="
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'

@@ -30,3 +30,4 @@ EXPOSE 8000
 
 CMD ["sh", "-c", "python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"]
 
+# CMD ["sh", "-c", "python3 manage.py migrate && gunicorn myproject.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
