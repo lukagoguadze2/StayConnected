@@ -6,9 +6,10 @@ from authentication.views import (
     LogOutView,
     ProfileView,
     PersonalPostView,
+    AnsweredPostsView,
     ResetPasswordView,
-    RefreshToken,
-    ResetPasswordRequestView
+    ResetPasswordRequestView,
+    RefreshToken
 )
 
 app_name = 'auth'
@@ -27,5 +28,6 @@ urlpatterns = [
     
     path('profile/', ProfileView.as_view(), name='profile'),
     path('profile/posts/', PersonalPostView.as_view(), name='profile-posts'),
+    path('profile/answered/', AnsweredPostsView.as_view(), name='answered-posts'),
     path('token/refresh/', RefreshToken.as_view(), name='token_refresh'),
 ]

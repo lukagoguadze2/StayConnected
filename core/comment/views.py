@@ -83,13 +83,17 @@ class CommentView(DestroyModelMixin,
                 {'detail': 'This post already has a correct answer.'}
             )
         
-        comment.is_correct = True
-        comment.author.update_rating(ratings.COMMENT_MARKED_AS_ANSWER)
+        if not comment.is_correct:
+            comment.is_correct = True
+            comment.author.update_rating(ratings.COMMENT_MARKED_AS_ANSWER)
+            comment.save()
+            
+            post_author = comment.post.author
+            post_author.update_rating(ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
+            
+            return Response({'detail': 'Comment marked as correct'})
         
-        post_author = comment.post.author
-        post_author.update_rating(ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
-        
-        return Response({'detail': 'Comment marked as correct'})
+        return Response({'detail': 'Comment is already marked as correct'})
 
     @swagger_auto_schema(
         operation_description=doc_class.unmark_correct['operation_description'],
@@ -110,20 +114,23 @@ class CommentView(DestroyModelMixin,
         
         if not Comment.objects.filter(post=comment.post, is_correct=True).exists():
             raise ValidationError(
-                {'detail': 'This post is not marked as correct yet.'}
+                {'detail': 'This comment is not marked as correct yet.'}
             )
         if not comment.is_correct:
             raise ValidationError(
                 {'detail': 'This comment is not marked as correct.'}
             )
+        if comment.is_correct:
+            comment.is_correct = False
+            comment.author.update_rating(-ratings.COMMENT_MARKED_AS_ANSWER)
+            comment.save()
 
-        comment.is_correct = False
-        comment.author.update_rating(-ratings.COMMENT_MARKED_AS_ANSWER)
+            post_author = comment.post.author
+            post_author.update_rating(-ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
 
-        post_author = comment.post.author
-        post_author.update_rating(-ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
-
-        return Response({'detail': 'Comment unmarked as correct'})
+            return Response({'detail': 'Comment unmarked as correct'})
+        
+        return Response({'detail': 'Comment is not marked as correct'})
 
     @swagger_auto_schema(
         operation_description=doc_class.delete_comment['operation_description'],

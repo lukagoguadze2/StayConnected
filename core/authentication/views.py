@@ -10,7 +10,11 @@ from rest_framework.generics import (
     RetrieveAPIView
 )
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenBlacklistView, TokenRefreshView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView, 
+    TokenBlacklistView, 
+    TokenRefreshView
+)
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -37,7 +41,8 @@ from .swagger_docs import (
     ProfileDocs,
     ProfilePostsDocs,
     ResetPasswordDocs,
-    ResetPasswordRequestDocs, TokenRefreshDocs
+    ResetPasswordRequestDocs, 
+    TokenRefreshDocs
 )
 
 
@@ -147,6 +152,30 @@ class PersonalPostView(ListAPIView):
         ).filter(
             author=self.request.user
         )
+
+
+class AnsweredPostsView(ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = []
+    doc_class = ProfilePostsDocs
+    
+    @swagger_auto_schema(
+        responses=doc_class.responses,
+        operation_description=doc_class.operation_description_correct_answer,
+        operation_summary=doc_class.operation_summary_correct_answer
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        user = self.request.user
+        return Post.objects.annotate_with_seen_by_user(
+            user=user
+        ).filter(
+            comments__author=user, 
+            comments__is_correct=True
+        ).distinct()
 
 
 class ResetPasswordRequestView(GenericAPIView):

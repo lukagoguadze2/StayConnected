@@ -491,9 +491,12 @@ class ProfilePostsDocs:
     Takes a user's token from the request header and return a list of posts created by the user. 
     Use this endpoint to get the user's posts.
     """
+    operation_description_correct_answer = """
+    Use this endpoint to get the posts with correct answers by the user.
+    """
 
     operation_summary = "Get the user's posts"
-
+    operation_summary_correct_answer = "Get the posts with correct answers by the user"
 
 class TokenRefreshDocs:
     operation_description = 'Use refresh token to get a new access token when the current one expires.'
