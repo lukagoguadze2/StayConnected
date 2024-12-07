@@ -26,7 +26,7 @@ RUN pip install gunicorn
 RUN pip install whitenoise
 
 WORKDIR /app/core
-RUN python3 manage.py collectstatic --noinput
+RUN python3 manage.py collectstatic 
 
 EXPOSE 8000
 
