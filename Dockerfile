@@ -23,9 +23,9 @@ COPY . /app/
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install gunicorn
-RUN python3 manage.py collectstatic --noinput
 
 WORKDIR /app/core
+RUN python3 manage.py collectstatic --noinput
 
 EXPOSE 8000
 
