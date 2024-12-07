@@ -1,0 +1,10 @@
+version: '3.9'
+
+services:
+  python-django:
+    image: saba2000dvali2000/python-django:latest
+    container_name: python-django
+    restart: always
+    ports:
+      - "8000:8000"
+
