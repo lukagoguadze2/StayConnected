@@ -21,13 +21,12 @@ COPY . /app/
 
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install gunicorn
 
 WORKDIR /app/core
+
 
 EXPOSE 8000
 
 # CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
-
-CMD ["sh", "-c", "python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"]
-
-# CMD ["sh", "-c", "python3 manage.py migrate && gunicorn myproject.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
+CMD ["sh", "-c", "python3 manage.py migrate && gunicorn myproject.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
