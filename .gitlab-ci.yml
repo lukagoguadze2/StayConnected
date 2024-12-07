@@ -121,7 +121,7 @@ production:
     - job: check-database
       artifacts: false 
   script:
-    - echo "===Production==="
+    - echo "===Production===1"
 
     - echo "building docker image"
     - docker stop $(docker ps -q) 2> /dev/null || true
