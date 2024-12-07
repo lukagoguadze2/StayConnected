@@ -126,6 +126,8 @@ production:
     - echo "building docker image"
     - docker stop $(docker ps -q) 2> /dev/null || true
     - docker system prune -a -f --volumes
+    - ls
+    - sleep 200
     - docker build --build-arg MYSQL_HOST=$MYSQL_HOST --build-arg MYSQL_PORT=$MYSQL_PORT --build-arg MYSQL_ROOT_USER=$MYSQL_ROOT_USER --build-arg MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --build-arg MYSQL_DB_NAME=$MYSQL_DB_NAME --build-arg SECRET_KEY=$SECRET_KEY -t  $Dockerhub/python-django:latest .
     - docker login -u "$Dockerhub" -p "$DOCKER_PASSWORD"
     - echo "pushing docker image to dockerhub"
