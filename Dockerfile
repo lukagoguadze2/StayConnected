@@ -23,6 +23,7 @@ COPY . /app/
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install gunicorn
+RUN pip install whitenoise
 
 WORKDIR /app/core
 RUN python3 manage.py collectstatic --noinput
