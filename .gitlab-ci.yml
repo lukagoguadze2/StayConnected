@@ -145,7 +145,8 @@ production:
         docker ps -a && \
         sleep 5 && \
         echo 'checking localhost:8000/health path' && \
-        curl -f http://localhost:8000/health || exit 1"
+        curl -f http://localhost:8000/api/check/health/ || exit 1 && \
+        curl -f http://localhost:8000/api/check/db-connection/ || exit 1 "
     - echo "==========COMPLETED=========="
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
