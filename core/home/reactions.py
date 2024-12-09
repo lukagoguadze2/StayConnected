@@ -30,10 +30,10 @@ def react_on_entity(self, request, *_, **kwargs):
     reaction_model: PostReaction | CommentReaction = kwargs.pop("model")
     object_type: Literal['post', 'comment'] = kwargs.pop("object")
     reaction_type: bool = kwargs.pop('reaction_type')
-    object_model: Post | Comment = getattr(self, 'get_object')
+    object_model: Post | Comment = getattr(self, 'get_object')()
 
     reaction = reaction_model.objects.filter(
-        user=request.user,
+        author=request.user,
         **{object_type: object_model}
     ).first()
 
@@ -49,7 +49,7 @@ def react_on_entity(self, request, *_, **kwargs):
         )
 
     reaction = reaction_model.objects.create(
-        user=request.user,
+        author=request.user,
         **{object_type: object_model},
         reaction_type=reaction_type
     )
@@ -87,11 +87,11 @@ def remove_reaction(self, request, *_, **kwargs):
 
     reaction_model: PostReaction | CommentReaction = kwargs.pop("model")
     object_type: Literal['post', 'comment'] = kwargs.pop("object")
-    object_model: Post | Comment = getattr(self, 'get_object')
+    object_model: Post | Comment = getattr(self, 'get_object')()
 
     try:
         reaction = reaction_model.objects.get(
-            user=request.user,
+            author=request.user,
             **{object_type: object_model}
         )
         if object_type == 'post':
@@ -148,13 +148,13 @@ def update_reaction(self, request, *_, **kwargs):
 
     reaction_model: PostReaction | CommentReaction = kwargs.pop("model")
     object_type: Literal['post', 'comment'] = kwargs.pop("object")
-    object_model: Post | Comment = getattr(self, 'get_object')
+    object_model: Post | Comment = getattr(self, 'get_object')()
     serializer = getattr(self, 'get_serializer')(data=request.data)
 
     if serializer.is_valid(raise_exception=True):
         try:
             reaction = reaction_model.objects.get(
-                user=self.request.user,
+                author=self.request.user,
                 **{object_type: object_model}
             )
         except reaction_model.DoesNotExist:

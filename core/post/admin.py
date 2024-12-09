@@ -19,14 +19,14 @@ class PostAdmin(admin.ModelAdmin):
 
 @admin.register(PostReaction)
 class PostReactionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'post', 'reaction_type')
-    list_select_related = ('user', 'post')
+    list_display = ('author', 'post', 'reaction_type')
+    list_select_related = ('author', 'post')
     ordering = ('created_at',)
     list_per_page = 20
     list_max_show_all = 100
 
     fieldsets = (
-        (None, {'fields': ('user', 'post', 'reaction_type')}),
+        (None, {'fields': ('author', 'post', 'reaction_type')}),
     )
 
 
