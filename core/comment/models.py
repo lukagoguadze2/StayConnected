@@ -21,6 +21,9 @@ class Comment(models.Model):
     date_answered = models.DateTimeField(auto_now_add=True)
     content = models.TextField()
 
+    class Meta:
+        ordering = ['-date_answered']
+
     def save(self, *args, **kwargs):
         if not self.author:
             self.author, created = User.objects.get_or_create(
@@ -53,4 +56,3 @@ class CommentReaction(models.Model):
     def __str__(self):
         prefix = 'dis' if not self.reaction_type else ''
         return f'{prefix}liked by {self.author} - comment: {self.comment.id}'
-

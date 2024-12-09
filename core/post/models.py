@@ -34,16 +34,16 @@ class PostReaction(models.Model):
         (DISLIKE, 'Dislike')
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     reaction_type = models.BooleanField(choices=REACTION_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'post')
+        unique_together = ('author', 'post')
 
     def __str__(self):
-        return f'{self.user} - {self.post}'
+        return f'{self.author} - {self.post}'
 
 
 class PostSeen(models.Model):

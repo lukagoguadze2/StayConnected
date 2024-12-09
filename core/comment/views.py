@@ -78,22 +78,40 @@ class CommentView(DestroyModelMixin,
     def mark_correct(self, request, *args, **kwargs):
         comment = self.get_object()
         
+        post_author = comment.post.author
+        if comment.author == post_author:
+            raise ValidationError(
+                {'detail': 'You cannot mark your own comment as correct.'}
+            )
+            
         if Comment.objects.filter(post=comment.post, is_correct=True).exists():
             raise ValidationError(
                 {'detail': 'This post already has a correct answer.'}
             )
         
-        if not comment.is_correct:
-            comment.is_correct = True
-            comment.author.update_rating(ratings.COMMENT_MARKED_AS_ANSWER)
-            comment.save()
+        bonus_points = 0
+        comments_count_on_post = Comment.objects.filter(
+            post=comment.post).count()
+        if comments_count_on_post > 20:
+            bonus_points += ratings.TWENTY_TO_HUNDRED_COMMENTS
             
-            post_author = comment.post.author
-            post_author.update_rating(ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
-            
-            return Response({'detail': 'Comment marked as correct'})
+        if comments_count_on_post >= 100:
+            bonus_points += ratings.HUNDRED_TO_TWOHUNDRED_COMMENTS
         
-        return Response({'detail': 'Comment is already marked as correct'})
+        if comments_count_on_post >= 200:
+            bonus_points += ratings.TWOHUNDRED_AND_MORE
+            
+        if comments_count_on_post > 20:
+            likes_count_on_post = CommentReaction.objects.filter(
+                comment__post=comment.post, reaction_type=CommentReaction.LIKE).count()
+            bonus_points += int(likes_count_on_post * 0.1)
+        
+        comment.is_correct = True
+        comment.save()
+        comment.author.update_rating(ratings.COMMENT_MARKED_AS_ANSWER + bonus_points)
+        
+        self.request.user.update_rating(ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
+        return Response({'detail': 'Comment marked as correct'})
 
     @swagger_auto_schema(
         operation_description=doc_class.unmark_correct['operation_description'],
@@ -112,25 +130,36 @@ class CommentView(DestroyModelMixin,
     def unmark_correct(self, request, *args, **kwargs):
         comment = self.get_object()    
         
-        if not Comment.objects.filter(post=comment.post, is_correct=True).exists():
-            raise ValidationError(
-                {'detail': 'This comment is not marked as correct yet.'}
-            )
         if not comment.is_correct:
             raise ValidationError(
                 {'detail': 'This comment is not marked as correct.'}
             )
-        if comment.is_correct:
-            comment.is_correct = False
-            comment.author.update_rating(-ratings.COMMENT_MARKED_AS_ANSWER)
-            comment.save()
-
-            post_author = comment.post.author
-            post_author.update_rating(-ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
-
-            return Response({'detail': 'Comment unmarked as correct'})
+    
+        bonus_points = 0
+        comments_count_on_post = Comment.objects.filter(
+            post=comment.post).count()
+        if comments_count_on_post > 20:
+            bonus_points += ratings.TWENTY_TO_HUNDRED_COMMENTS
+            
+        if comments_count_on_post >= 100:
+            bonus_points += ratings.HUNDRED_TO_TWOHUNDRED_COMMENTS
         
-        return Response({'detail': 'Comment is not marked as correct'})
+        if comments_count_on_post >= 200:
+            bonus_points += ratings.TWOHUNDRED_AND_MORE
+        
+        if comments_count_on_post > 20:
+            likes_count_on_post = CommentReaction.objects.filter(
+                comment__post=comment.post, reaction_type=CommentReaction.LIKE).count()
+            bonus_points += int(likes_count_on_post * 0.1)
+            
+        comment.is_correct = False
+        comment.author.update_rating(
+            -(ratings.COMMENT_MARKED_AS_ANSWER + bonus_points))
+        comment.save()
+         
+        request.user.update_rating(-ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
+        
+        return Response({'detail': 'Comment unmarked as correct'})
 
     @swagger_auto_schema(
         operation_description=doc_class.delete_comment['operation_description'],
