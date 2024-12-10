@@ -45,7 +45,12 @@
    python manage.py migrate
    ```
 
-5. Run the development server:
+5. Collect static files:
+   ```bash
+   python manage.py collectstatic
+   ```
+
+6. Run the development server:
    ```bash
    python manage.py runserver
    ```

@@ -32,6 +32,7 @@ class CreateCommentSerializer(serializers.ModelSerializer):
 
 class GetPostCommentsSerializer(serializers.ModelSerializer):
     author = UserProfileSerializer(many=False)
+    date_answered = serializers.SerializerMethodField()
     post_id = serializers.IntegerField(source='post.id')
 
     class Meta:
@@ -41,7 +42,9 @@ class GetPostCommentsSerializer(serializers.ModelSerializer):
             'author', 
             'post_id', 
             'content', 
-            'date_answered', 
+            'date_answered',
             'is_correct'
         )
 
+    def get_date_answered(self, obj):
+        return int(obj.date_answered.timestamp())
