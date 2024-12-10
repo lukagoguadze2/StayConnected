@@ -10,6 +10,6 @@ router.register('', CommentView, basename='comment')
 app_name = 'comment'
 
 urlpatterns = [
-    path('post/<int:post_id>/', PostCommentsView.as_view(), name='post_comments'),
+    path('<int:post_id>/post', PostCommentsView.as_view(), name='post_comments'),
     path('', include(router.urls)),
 ]

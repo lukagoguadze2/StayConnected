@@ -26,6 +26,7 @@ class CommentView(DestroyModelMixin,
                   ReactionModelMixin,
                   GenericViewSet):
     queryset = Comment.objects.prefetch_related('author', 'post')
+    http_method_names = ['delete', 'post', 'put']
     permission_classes = [IsAuthenticated]
     serializer_class = SerializerFactory(
         CreateCommentSerializer,
@@ -110,7 +111,7 @@ class CommentView(DestroyModelMixin,
         comment.save()
         comment.author.update_rating(ratings.COMMENT_MARKED_AS_ANSWER + bonus_points)
         
-        self.request.user.update_rating(ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
+        request.user.update_rating(ratings.COMMENT_AUTHOR_MARKED_AS_ANSWER)
         return Response({'detail': 'Comment marked as correct'})
 
     @swagger_auto_schema(
@@ -182,6 +183,7 @@ class CommentPagination(PageNumberPagination):
 class PostCommentsView(ListAPIView):
     serializer_class = GetPostCommentsSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
     pagination_class = CommentPagination
     filter_backends = []
 
